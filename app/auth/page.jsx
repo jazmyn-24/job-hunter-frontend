@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
 import "./auth.css";
 
 /* ── SVG Icons ──────────────────────────────────────────────────────────── */
@@ -36,13 +37,17 @@ function GitHubIcon() {
 
 /* ── Auth Card ───────────────────────────────────────────────────────────── */
 function AuthCard() {
-  const [view, setView] = useState("signin");
-  const [email, setEmail] = useState("");
+  const { signIn, isLoaded: signInLoaded } = useSignIn();
+  const { signUp, isLoaded: signUpLoaded } = useSignUp();
+
+  const [view, setView]           = useState("signin");
+  const [email, setEmail]         = useState("");
   const [emailError, setEmailError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [loading, setLoading]     = useState(false);
+  const [sent, setSent]           = useState(false);
 
   const isSignUp = view === "signup";
+  const isLoaded = signInLoaded && signUpLoaded;
 
   function switchView(next) {
     setView(next);
@@ -58,24 +63,63 @@ function AuthCard() {
     return "";
   }
 
+  async function handleOAuth(provider) {
+    if (!isLoaded) return;
+    const strategy = {
+      google:    "oauth_google",
+      microsoft: "oauth_microsoft",
+      github:    "oauth_github",
+    }[provider];
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy,
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/onboarding",
+      });
+    } catch (err) {
+      console.error("OAuth error:", err);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     const err = validateEmail(email);
     if (err) { setEmailError(err); return; }
+    if (!isLoaded) return;
+
     setEmailError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    setSent(true);
+
+    try {
+      if (isSignUp) {
+        await signUp.create({ emailAddress: email });
+        const { startEmailLinkFlow } = signUp.createEmailLinkFlow();
+        // Fire without await — email sends immediately, flow resolves when link clicked
+        startEmailLinkFlow({ redirectUrl: `${window.location.origin}/sso-callback` });
+      } else {
+        const si = await signIn.create({ identifier: email });
+        const factor = si.supportedFirstFactors?.find(
+          (ff) => ff.strategy === "email_link"
+        );
+        if (factor) {
+          const { startEmailLinkFlow } = si.createEmailLinkFlow();
+          startEmailLinkFlow({
+            emailAddressId: factor.emailAddressId,
+            redirectUrl: `${window.location.origin}/sso-callback`,
+          });
+        }
+      }
+      setLoading(false);
+      setSent(true);
+    } catch (err) {
+      setLoading(false);
+      setEmailError(err.errors?.[0]?.longMessage ?? "Something went wrong. Try again.");
+    }
   }
 
   function handleEmailChange(e) {
     setEmail(e.target.value);
     if (emailError) setEmailError("");
-  }
-
-  function handleOAuth(provider) {
-    console.log("OAuth:", provider);
   }
 
   return (
@@ -113,14 +157,14 @@ function AuthCard() {
 
       {/* OAuth */}
       <div className="auth-oauth-list">
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("google")} type="button">
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("google")} type="button" disabled={!isLoaded}>
           <span className="auth-oauth-icon"><GoogleIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Google</span>
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("microsoft")} type="button">
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("microsoft")} type="button" disabled={!isLoaded}>
           <span className="auth-oauth-icon"><MicrosoftIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Microsoft</span>
@@ -128,7 +172,7 @@ function AuthCard() {
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("github")} type="button">
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("github")} type="button" disabled={!isLoaded}>
           <span className="auth-oauth-icon"><GitHubIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with GitHub</span>
@@ -161,14 +205,14 @@ function AuthCard() {
             onChange={handleEmailChange}
             aria-label="Email address"
             aria-describedby={emailError ? "email-error" : undefined}
-            disabled={loading}
+            disabled={loading || !isLoaded}
           />
           {emailError && (
             <span id="email-error" className="auth-error-msg" role="alert">
               {emailError}
             </span>
           )}
-          <button className="auth-submit-btn" type="submit" disabled={loading}>
+          <button className="auth-submit-btn" type="submit" disabled={loading || !isLoaded}>
             {loading ? (
               <>
                 <span className="auth-spinner" aria-hidden="true" />
@@ -209,7 +253,6 @@ function AuthCard() {
 export default function AuthPage() {
   return (
     <div className="auth-page">
-      {/* Background blobs */}
       <div className="auth-blob auth-blob-1" aria-hidden="true" />
       <div className="auth-blob auth-blob-2" aria-hidden="true" />
       <div className="auth-blob auth-blob-3" aria-hidden="true" />
