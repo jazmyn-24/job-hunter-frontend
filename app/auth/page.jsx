@@ -157,14 +157,14 @@ function AuthCard() {
 
       {/* OAuth */}
       <div className="auth-oauth-list">
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("google")} type="button" disabled={!isLoaded}>
+        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("google")} type="button">
           <span className="auth-oauth-icon"><GoogleIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Google</span>
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("microsoft")} type="button" disabled={!isLoaded}>
+        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("microsoft")} type="button">
           <span className="auth-oauth-icon"><MicrosoftIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Microsoft</span>
@@ -172,7 +172,7 @@ function AuthCard() {
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => handleOAuth("linkedin")} type="button" disabled={!isLoaded}>
+        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("linkedin")} type="button">
           <span className="auth-oauth-icon"><LinkedInIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with LinkedIn</span>
@@ -205,14 +205,14 @@ function AuthCard() {
             onChange={handleEmailChange}
             aria-label="Email address"
             aria-describedby={emailError ? "email-error" : undefined}
-            disabled={loading || !isLoaded}
+            disabled={loading}
           />
           {emailError && (
             <span id="email-error" className="auth-error-msg" role="alert">
               {emailError}
             </span>
           )}
-          <button className="auth-submit-btn" type="submit" disabled={loading || !isLoaded}>
+          <button className="auth-submit-btn" type="submit" disabled={loading}>
             {loading ? (
               <>
                 <span className="auth-spinner" aria-hidden="true" />
