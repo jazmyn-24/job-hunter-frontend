@@ -6,16 +6,22 @@ const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
 ]);
 const isAuthRoute = createRouteMatcher(["/auth(.*)"]);
+const isPublicRoute = createRouteMatcher(["/", "/auth(.*)", "/sso-callback(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-
-  if (isProtectedRoute(req) && !userId) {
-    return NextResponse.redirect(new URL("/auth", req.url));
+  // Always allow public routes through without interference
+  if (isPublicRoute(req)) {
+    const { userId } = await auth();
+    // Only redirect away from /auth if already signed in
+    if (isAuthRoute(req) && userId) {
+      return NextResponse.redirect(new URL("/onboarding", req.url));
+    }
+    return;
   }
 
-  if (isAuthRoute(req) && userId) {
-    return NextResponse.redirect(new URL("/onboarding", req.url));
+  const { userId } = await auth();
+  if (isProtectedRoute(req) && !userId) {
+    return NextResponse.redirect(new URL("/auth", req.url));
   }
 });
 
