@@ -28,54 +28,14 @@ function MicrosoftIcon() {
 
 function GitHubIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#0a0a0a">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff">
       <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
     </svg>
   );
 }
 
-/* ── Left panel ─────────────────────────────────────────────────────────── */
-function AuthLeft() {
-  return (
-    <aside className="auth-left">
-      {/* Decorative circles */}
-      <div className="auth-left-circle-top" aria-hidden="true" />
-      <div className="auth-left-circle-bottom" aria-hidden="true" />
-
-      <div className="auth-logo">job-hunter</div>
-
-      <div className="auth-left-body">
-        <p className="auth-eyebrow">CO-OP JOB PLATFORM</p>
-        <h2 className="auth-left-headline">
-          The co-op job platform built for Canadian students.
-        </h2>
-        <p className="auth-left-sub">
-          AI finds, scores and applies to positions across Canada every
-          night. Wake up to interviews, not job boards.
-        </p>
-        <ul className="auth-left-features">
-          <li>
-            <span className="auth-feature-dot" aria-hidden="true" />
-            Scrapes 12+ job boards every night
-          </li>
-          <li>
-            <span className="auth-feature-dot" aria-hidden="true" />
-            Scores every job against your profile
-          </li>
-          <li>
-            <span className="auth-feature-dot" aria-hidden="true" />
-            Applies automatically while you sleep
-          </li>
-        </ul>
-      </div>
-
-      <p className="auth-left-footer">473 jobs indexed</p>
-    </aside>
-  );
-}
-
-/* ── Right panel ─────────────────────────────────────────────────────────── */
-function AuthRight() {
+/* ── Auth Card ───────────────────────────────────────────────────────────── */
+function AuthCard() {
   const [view, setView] = useState("signin");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -104,7 +64,6 @@ function AuthRight() {
     if (err) { setEmailError(err); return; }
     setEmailError("");
     setLoading(true);
-    // Simulate network delay, then show success
     await new Promise((r) => setTimeout(r, 900));
     setLoading(false);
     setSent(true);
@@ -116,136 +75,132 @@ function AuthRight() {
   }
 
   function handleOAuth(provider) {
-    // Stub — wire to backend OAuth endpoints
     console.log("OAuth:", provider);
   }
 
   return (
-    <div className="auth-right">
-      <div className="auth-form-wrap">
-        {/* Tabs */}
-        <div className="auth-tabs" role="tablist">
-          <button
-            role="tab"
-            aria-selected={view === "signin"}
-            className={`auth-tab${view === "signin" ? " active" : ""}`}
-            onClick={() => switchView("signin")}
-          >
-            Sign in
-          </button>
-          <button
-            role="tab"
-            aria-selected={view === "signup"}
-            className={`auth-tab${view === "signup" ? " active" : ""}`}
-            onClick={() => switchView("signup")}
-          >
-            Sign up
-          </button>
-        </div>
+    <div className="auth-card">
+      {/* Logo */}
+      <div className="auth-logo">job-hunter</div>
 
-        {/* Heading */}
-        <h1 className="auth-title">
-          {isSignUp ? "Get started free" : "Welcome back"}
-        </h1>
-        <p className="auth-subtitle">
-          {isSignUp
-            ? "No credit card · takes 30 seconds"
-            : "Sign in to your account"}
-        </p>
-
-        {/* OAuth */}
-        <div className="auth-oauth-list">
-          <button className="auth-oauth-btn" onClick={() => handleOAuth("google")} type="button">
-            <span className="auth-oauth-icon"><GoogleIcon /></span>
-            <span className="auth-oauth-text">
-              <span className="auth-oauth-label">Continue with Google</span>
-            </span>
-          </button>
-
-          <button className="auth-oauth-btn" onClick={() => handleOAuth("microsoft")} type="button">
-            <span className="auth-oauth-icon"><MicrosoftIcon /></span>
-            <span className="auth-oauth-text">
-              <span className="auth-oauth-label">Continue with Microsoft</span>
-              <span className="auth-oauth-sub">northeastern.edu · any org email</span>
-            </span>
-          </button>
-
-          <button className="auth-oauth-btn" onClick={() => handleOAuth("github")} type="button">
-            <span className="auth-oauth-icon"><GitHubIcon /></span>
-            <span className="auth-oauth-text">
-              <span className="auth-oauth-label">Continue with GitHub</span>
-            </span>
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="auth-divider" aria-hidden="true">
-          <div className="auth-divider-line" />
-          <span className="auth-divider-text">or</span>
-          <div className="auth-divider-line" />
-        </div>
-
-        {/* Magic link / success */}
-        {sent ? (
-          <div className="auth-success" role="status">
-            <div className="auth-success-icon">✉️</div>
-            <p className="auth-success-title">Check your inbox</p>
-            <p className="auth-success-sub">
-              Magic link sent · check your spam if needed
-            </p>
-          </div>
-        ) : (
-          <form className="auth-email-form" onSubmit={handleSubmit} noValidate>
-            <input
-              className={`auth-input${emailError ? " error" : ""}`}
-              type="email"
-              autoComplete="email"
-              placeholder={isSignUp ? "you@northeastern.edu" : "your@email.com"}
-              value={email}
-              onChange={handleEmailChange}
-              aria-label="Email address"
-              aria-describedby={emailError ? "email-error" : undefined}
-              disabled={loading}
-            />
-            {emailError && (
-              <span id="email-error" className="auth-error-msg" role="alert">
-                {emailError}
-              </span>
-            )}
-            <button className="auth-submit-btn" type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="auth-spinner" aria-hidden="true" />
-                  Sending…
-                </>
-              ) : isSignUp ? (
-                "Get started free →"
-              ) : (
-                "Send magic link →"
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* Switch view */}
-        <p className="auth-switch">
-          {isSignUp ? (
-            <>
-              Already have an account?{" "}
-              <button className="auth-switch-btn" onClick={() => switchView("signin")}>
-                Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              Don&apos;t have an account?{" "}
-              <button className="auth-switch-btn" onClick={() => switchView("signup")}>
-                Sign up
-              </button>
-            </>
-          )}
-        </p>
+      {/* Tabs */}
+      <div className="auth-tabs" role="tablist">
+        <button
+          role="tab"
+          aria-selected={view === "signin"}
+          className={`auth-tab${view === "signin" ? " active" : ""}`}
+          onClick={() => switchView("signin")}
+        >
+          Sign in
+        </button>
+        <button
+          role="tab"
+          aria-selected={view === "signup"}
+          className={`auth-tab${view === "signup" ? " active" : ""}`}
+          onClick={() => switchView("signup")}
+        >
+          Sign up
+        </button>
       </div>
+
+      {/* Heading */}
+      <h1 className="auth-title">
+        {isSignUp ? "Create your account" : "Welcome back"}
+      </h1>
+      <p className="auth-subtitle">
+        {isSignUp ? "Start finding co-op jobs tonight" : "Sign in to continue"}
+      </p>
+
+      {/* OAuth */}
+      <div className="auth-oauth-list">
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("google")} type="button">
+          <span className="auth-oauth-icon"><GoogleIcon /></span>
+          <span className="auth-oauth-text">
+            <span className="auth-oauth-label">Continue with Google</span>
+          </span>
+        </button>
+
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("microsoft")} type="button">
+          <span className="auth-oauth-icon"><MicrosoftIcon /></span>
+          <span className="auth-oauth-text">
+            <span className="auth-oauth-label">Continue with Microsoft</span>
+            <span className="auth-oauth-sub">northeastern.edu · any org email</span>
+          </span>
+        </button>
+
+        <button className="auth-oauth-btn" onClick={() => handleOAuth("github")} type="button">
+          <span className="auth-oauth-icon"><GitHubIcon /></span>
+          <span className="auth-oauth-text">
+            <span className="auth-oauth-label">Continue with GitHub</span>
+          </span>
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="auth-divider" aria-hidden="true">
+        <div className="auth-divider-line" />
+        <span className="auth-divider-text">or</span>
+        <div className="auth-divider-line" />
+      </div>
+
+      {/* Form / Success */}
+      {sent ? (
+        <div className="auth-success" role="status">
+          <div className="auth-success-icon">✉️</div>
+          <p className="auth-success-title">Check your inbox</p>
+          <p className="auth-success-sub">Magic link sent · check your spam if needed</p>
+        </div>
+      ) : (
+        <form className="auth-email-form" onSubmit={handleSubmit} noValidate>
+          <input
+            className={`auth-input${emailError ? " error" : ""}`}
+            type="email"
+            autoComplete="email"
+            placeholder={isSignUp ? "you@northeastern.edu" : "your@email.com"}
+            value={email}
+            onChange={handleEmailChange}
+            aria-label="Email address"
+            aria-describedby={emailError ? "email-error" : undefined}
+            disabled={loading}
+          />
+          {emailError && (
+            <span id="email-error" className="auth-error-msg" role="alert">
+              {emailError}
+            </span>
+          )}
+          <button className="auth-submit-btn" type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="auth-spinner" aria-hidden="true" />
+                Sending…
+              </>
+            ) : isSignUp ? (
+              "Get started free →"
+            ) : (
+              "Send magic link →"
+            )}
+          </button>
+        </form>
+      )}
+
+      {/* Switch view */}
+      <p className="auth-switch">
+        {isSignUp ? (
+          <>
+            Already have an account?{" "}
+            <button className="auth-switch-btn" onClick={() => switchView("signin")}>
+              Sign in
+            </button>
+          </>
+        ) : (
+          <>
+            Don&apos;t have an account?{" "}
+            <button className="auth-switch-btn" onClick={() => switchView("signup")}>
+              Sign up
+            </button>
+          </>
+        )}
+      </p>
     </div>
   );
 }
@@ -254,8 +209,12 @@ function AuthRight() {
 export default function AuthPage() {
   return (
     <div className="auth-page">
-      <AuthLeft />
-      <AuthRight />
+      {/* Background blobs */}
+      <div className="auth-blob auth-blob-1" aria-hidden="true" />
+      <div className="auth-blob auth-blob-2" aria-hidden="true" />
+      <div className="auth-blob auth-blob-3" aria-hidden="true" />
+
+      <AuthCard />
     </div>
   );
 }
