@@ -214,28 +214,27 @@ export default function AuthPage() {
       <div className="auth-blob auth-blob-2" aria-hidden="true" />
       <div className="auth-blob auth-blob-3" aria-hidden="true" />
 
-      {/* Above card */}
-      <div className="auth-hero">
+      {/* Left column */}
+      <div className="auth-left">
         <p className="auth-eyebrow">CO-OP JOB PLATFORM FOR CANADA</p>
         <h1 className="auth-headline">
-          The co-op job platform built<br />for Canadian students.
+          The co-op job platform built for Canadian students.
         </h1>
         <p className="auth-herotext">
-          AI finds, scores and applies to positions across Canada<br />
+          AI finds, scores and applies to positions across Canada
           every night. Wake up to interviews, not job boards.
         </p>
-      </div>
-
-      <AuthCard />
-
-      {/* Below card */}
-      <div className="auth-footer">
         <div className="auth-pills">
           <span className="auth-pill">◉ Scrapes 12+ job boards nightly</span>
-          <span className="auth-pill">★ AI scores every job</span>
-          <span className="auth-pill">↗ Applies while you sleep</span>
+          <span className="auth-pill">★ AI scores every job against your profile</span>
+          <span className="auth-pill">↗ Applies automatically while you sleep</span>
         </div>
         <p className="auth-indexed">473 jobs indexed · free to get started</p>
+      </div>
+
+      {/* Right column */}
+      <div className="auth-right">
+        <AuthCard />
       </div>
     </div>
   );
