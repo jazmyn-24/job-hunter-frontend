@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { clearSession, getSession } from "../lib/session";
 import { useRouter } from "next/navigation";
+import "../app/dashboard/dashboard.css";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ ICONS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
