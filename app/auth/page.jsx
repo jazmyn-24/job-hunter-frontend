@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "./auth.css";
 import { isOnboarded } from "../../lib/session";
@@ -40,6 +40,10 @@ function LinkedInIcon() {
 function AuthCard() {
   const router = useRouter();
   const [view, setView]             = useState("signin");
+
+  useEffect(() => {
+    if (isOnboarded()) router.replace("/dashboard");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [email, setEmail]           = useState("");
   const [emailError, setEmailError] = useState("");
   const [loading, setLoading]       = useState(false);

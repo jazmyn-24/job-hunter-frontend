@@ -24,6 +24,11 @@ export default function DashboardPage() {
     router.push("/auth");
   }
 
+  function resetOnboarding() {
+    clearSession();
+    router.push("/onboarding");
+  }
+
   if (!ready) return null;
 
   return (
@@ -49,24 +54,40 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <button
-        onClick={signOut}
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          background: "none",
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
-          padding: "8px 16px",
-          fontFamily: "Inter, sans-serif",
-          fontSize: "12px",
-          color: "#9ca3af",
-          cursor: "pointer",
-        }}
-      >
-        Sign out
-      </button>
+      <div style={{ position: "fixed", bottom: "24px", right: "24px", display: "flex", gap: "8px" }}>
+        {process.env.NODE_ENV === "development" && (
+          <button
+            onClick={resetOnboarding}
+            style={{
+              background: "none",
+              border: "1px solid #fca5a5",
+              borderRadius: "8px",
+              padding: "8px 16px",
+              fontFamily: "Inter, sans-serif",
+              fontSize: "12px",
+              color: "#f87171",
+              cursor: "pointer",
+            }}
+          >
+            Reset onboarding
+          </button>
+        )}
+        <button
+          onClick={signOut}
+          style={{
+            background: "none",
+            border: "1px solid #e5e7eb",
+            borderRadius: "8px",
+            padding: "8px 16px",
+            fontFamily: "Inter, sans-serif",
+            fontSize: "12px",
+            color: "#9ca3af",
+            cursor: "pointer",
+          }}
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }
