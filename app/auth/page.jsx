@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import "./auth.css";
+import { isOnboarded } from "../../lib/session";
 
 /* ── SVG Icons ──────────────────────────────────────────────────────────── */
 function GoogleIcon() {
@@ -61,7 +62,7 @@ function AuthCard() {
   }
 
   function handleOAuth() {
-    router.push("/onboarding");
+    router.push(isOnboarded() ? "/dashboard" : "/onboarding");
   }
 
   function handleSubmit(e) {
@@ -73,7 +74,8 @@ function AuthCard() {
     setTimeout(() => {
       setLoading(false);
       setSent(true);
-      setTimeout(() => router.push("/onboarding"), 1500);
+      const dest = isOnboarded() ? "/dashboard" : "/onboarding";
+      setTimeout(() => router.push(dest), 1500);
     }, 800);
   }
 

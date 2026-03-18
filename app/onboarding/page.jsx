@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "./onboarding.css";
+import { saveSession, getSession, isOnboarded } from "../../lib/session";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DATA ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -542,6 +543,7 @@ function SuccessState() {
 export default function OnboardingPage() {
   const router = useRouter();
 
+  const [ready,     setReady]     = useState(false);
   const [step,      setStep]      = useState(1);
   const [direction, setDirection] = useState("forward");
   const [animKey,   setAnimKey]   = useState(0);
@@ -563,9 +565,27 @@ export default function OnboardingPage() {
     notifications:  { email: "", morning: true, highScore: true, interview: true, weekly: false },
   });
 
+  useEffect(() => {
+    if (isOnboarded()) {
+      router.replace("/dashboard");
+      return;
+    }
+    const session = getSession();
+    if (session?.onboardingData) {
+      setForm(prev => ({ ...prev, ...session.onboardingData, cvFiles: [] }));
+      setStep(session.onboardingStep || 1);
+    }
+    setReady(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function update(key, val) {
     setForm(prev => ({ ...prev, [key]: val }));
     setError("");
+  }
+
+  function persistStep(nextStep, currentForm) {
+    const { cvFiles, ...serializable } = currentForm;
+    saveSession({ ...getSession(), onboardingStep: nextStep, onboardingData: serializable });
   }
 
   function validate() {
@@ -586,11 +606,20 @@ export default function OnboardingPage() {
       return;
     }
     if (step === 10) {
+      const { cvFiles, ...serializable } = form;
+      saveSession({
+        ...getSession(),
+        onboardingComplete: true,
+        completedAt: new Date().toISOString(),
+        name: form.name,
+        onboardingData: serializable,
+      });
       setDone(true);
       setTimeout(() => router.push("/dashboard"), 2500);
       return;
     }
     setError("");
+    persistStep(step + 1, form);
     setDirection("forward");
     setAnimKey(k => k + 1);
     setStep(s => s + 1);
@@ -603,6 +632,7 @@ export default function OnboardingPage() {
     setError("");
   }
 
+  if (!ready) return null;
   if (done) return <SuccessState />;
 
   const steps = [
