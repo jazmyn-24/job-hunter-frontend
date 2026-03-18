@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import "./auth.css";
 
 /* ── SVG Icons ──────────────────────────────────────────────────────────── */
@@ -37,17 +37,14 @@ function LinkedInIcon() {
 
 /* ── Auth Card ───────────────────────────────────────────────────────────── */
 function AuthCard() {
-  const { signIn, isLoaded: signInLoaded } = useSignIn();
-  const { signUp, isLoaded: signUpLoaded } = useSignUp();
-
-  const [view, setView]           = useState("signin");
-  const [email, setEmail]         = useState("");
+  const router = useRouter();
+  const [view, setView]             = useState("signin");
+  const [email, setEmail]           = useState("");
   const [emailError, setEmailError] = useState("");
-  const [loading, setLoading]     = useState(false);
-  const [sent, setSent]           = useState(false);
+  const [loading, setLoading]       = useState(false);
+  const [sent, setSent]             = useState(false);
 
   const isSignUp = view === "signup";
-  const isLoaded = signInLoaded && signUpLoaded;
 
   function switchView(next) {
     setView(next);
@@ -63,58 +60,21 @@ function AuthCard() {
     return "";
   }
 
-  async function handleOAuth(provider) {
-    if (!isLoaded) return;
-    const strategy = {
-      google:    "oauth_google",
-      microsoft: "oauth_microsoft",
-      linkedin:  "oauth_linkedin_oidc",
-    }[provider];
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/onboarding",
-      });
-    } catch (err) {
-      console.error("OAuth error:", err);
-    }
+  function handleOAuth() {
+    router.push("/onboarding");
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
     const err = validateEmail(email);
     if (err) { setEmailError(err); return; }
-    if (!isLoaded) return;
-
     setEmailError("");
     setLoading(true);
-
-    try {
-      if (isSignUp) {
-        await signUp.create({ emailAddress: email });
-        const { startEmailLinkFlow } = signUp.createEmailLinkFlow();
-        // Fire without await — email sends immediately, flow resolves when link clicked
-        startEmailLinkFlow({ redirectUrl: `${window.location.origin}/sso-callback` });
-      } else {
-        const si = await signIn.create({ identifier: email });
-        const factor = si.supportedFirstFactors?.find(
-          (ff) => ff.strategy === "email_link"
-        );
-        if (factor) {
-          const { startEmailLinkFlow } = si.createEmailLinkFlow();
-          startEmailLinkFlow({
-            emailAddressId: factor.emailAddressId,
-            redirectUrl: `${window.location.origin}/sso-callback`,
-          });
-        }
-      }
+    setTimeout(() => {
       setLoading(false);
       setSent(true);
-    } catch (err) {
-      setLoading(false);
-      setEmailError(err.errors?.[0]?.longMessage ?? "Something went wrong. Try again.");
-    }
+      setTimeout(() => router.push("/onboarding"), 1500);
+    }, 800);
   }
 
   function handleEmailChange(e) {
@@ -157,14 +117,14 @@ function AuthCard() {
 
       {/* OAuth */}
       <div className="auth-oauth-list">
-        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("google")} type="button">
+        <button className="auth-oauth-btn" onClick={handleOAuth} type="button">
           <span className="auth-oauth-icon"><GoogleIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Google</span>
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("microsoft")} type="button">
+        <button className="auth-oauth-btn" onClick={handleOAuth} type="button">
           <span className="auth-oauth-icon"><MicrosoftIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with Microsoft</span>
@@ -172,7 +132,7 @@ function AuthCard() {
           </span>
         </button>
 
-        <button className="auth-oauth-btn" onClick={() => isLoaded && handleOAuth("linkedin")} type="button">
+        <button className="auth-oauth-btn" onClick={handleOAuth} type="button">
           <span className="auth-oauth-icon"><LinkedInIcon /></span>
           <span className="auth-oauth-text">
             <span className="auth-oauth-label">Continue with LinkedIn</span>
@@ -192,7 +152,7 @@ function AuthCard() {
         <div className="auth-success" role="status">
           <div className="auth-success-icon">✉️</div>
           <p className="auth-success-title">Check your inbox</p>
-          <p className="auth-success-sub">Magic link sent · check your spam if needed</p>
+          <p className="auth-success-sub">Redirecting you now…</p>
         </div>
       ) : (
         <form className="auth-email-form" onSubmit={handleSubmit} noValidate>
