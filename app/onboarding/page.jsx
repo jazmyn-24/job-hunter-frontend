@@ -115,7 +115,7 @@ function getSkillsForField(fields) {
 }
 
 const LOCATIONS   = ["Vancouver","Toronto","Calgary","Edmonton","Ottawa","Montreal","Waterloo","Remote (Canada)","Open to anything"];
-const START_DATES = ["August 2026","September 2026","January 2027","May 2027","Other"];
+const START_DATES = ["January 2026","May 2026","August 2026","September 2026","January 2027","May 2027","Flexible"];
 const DURATIONS   = ["4 months","8 months","12 months","Flexible"];
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHARED ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -440,20 +440,25 @@ function Step7({ data, onChange }) {
 }
 
 function Step8({ data, onChange }) {
+  function toggleDate(d) {
+    onChange("startDates", data.startDates.includes(d) ? data.startDates.filter(x => x !== d) : [...data.startDates, d]);
+  }
+  function toggleDuration(d) {
+    onChange("durations", data.durations.includes(d) ? data.durations.filter(x => x !== d) : [...data.durations, d]);
+  }
   return (
     <div>
-      <StepHeader label="STEP 8 — AVAILABILITY" headline="When are you available?" sub="This helps us filter for the right start dates." />
+      <StepHeader label="STEP 8 — AVAILABILITY" headline="When are you available?" sub="This helps us filter for the right start dates and lengths." />
       <div className="ob-profile-field">
         <label className="ob-label">Preferred start date</label>
-        <select className="ob-select" value={data.startDate} onChange={e => onChange("startDate", e.target.value)}>
-          <option value="">Select a start date</option>
-          {START_DATES.map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
+        <div className="ob-chips-wrap">
+          {START_DATES.map(d => <Chip key={d} label={d} selected={data.startDates.includes(d)} onClick={() => toggleDate(d)} />)}
+        </div>
       </div>
       <div className="ob-profile-field" style={{ marginTop: "20px" }}>
         <label className="ob-label">Co-op duration</label>
         <div className="ob-chips-wrap">
-          {DURATIONS.map(d => <Chip key={d} label={d} selected={data.duration === d} onClick={() => onChange("duration", d)} />)}
+          {DURATIONS.map(d => <Chip key={d} label={d} selected={data.durations.includes(d)} onClick={() => toggleDuration(d)} />)}
         </div>
       </div>
     </div>
@@ -552,8 +557,8 @@ export default function OnboardingPage() {
     cvFiles:        [],
     locations:      [],
     profiles:       { linkedin: "", github: "", portfolio: "" },
-    startDate:      "",
-    duration:       "",
+    startDates:     [],
+    durations:      [],
     automationMode: "balanced",
     notifications:  { email: "", morning: true, highScore: true, interview: true, weekly: false },
   });
@@ -608,7 +613,7 @@ export default function OnboardingPage() {
     <Step5  key={5}  data={form} onChange={v => update("cvFiles", v)} />,
     <Step6  key={6}  data={form} onChange={v => update("locations", v)} />,
     <Step7  key={7}  data={form} onChange={v => update("profiles", v)} />,
-    <Step8  key={8}  data={form} onChange={(k, v) => setForm(p => ({ ...p, [k]: v }))} />,
+    <Step8  key={8}  data={form} onChange={(k, v) => { setForm(p => ({ ...p, [k]: v })); setError(""); }} />,
     <Step9  key={9}  data={form} onChange={v => update("automationMode", v)} />,
     <Step10 key={10} data={form} onChange={v => update("notifications", v)} />,
   ];
