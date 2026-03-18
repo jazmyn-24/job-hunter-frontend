@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getSession, isOnboarded, clearSession } from "../../lib/session";
+import { getStats, getPipelineStatus, getScoreQueue, triggerPipeline } from "../../lib/api";
 import "./dashboard.css";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ ICONS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -105,6 +106,17 @@ function getInitials(name) {
     : parts[0][0].toUpperCase();
 }
 
+function formatLastRun(isoString) {
+  if (!isoString) return "Never";
+  const diff = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 const FIELD_NAMES = {
   tech: "Technology", data: "Data & Analytics", biz: "Business & Finance",
   mkt: "Marketing", eng: "Engineering", health: "Health Sciences",
@@ -112,12 +124,27 @@ const FIELD_NAMES = {
   other: "Other",
 };
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function Shimmer({ width = 80, height = 40 }) {
+  return (
+    <div style={{
+      width,
+      height,
+      background: "linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%)",
+      backgroundSize: "200% 100%",
+      animation: "shimmer 1.5s infinite",
+      borderRadius: 6,
+    }} />
+  );
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const NAV_ITEMS = [
   { label: "Dashboard",    icon: <IconGrid />,         badge: null },
-  { label: "Jobs",         icon: <IconBriefcase />,    badge: "473" },
-  { label: "Score queue",  icon: <IconStar />,         badge: "6" },
+  { label: "Jobs",         icon: <IconBriefcase />,    badge: null },
+  { label: "Score queue",  icon: <IconStar />,         badge: null },
   { label: "Applications", icon: <IconCheckCircle />,  badge: null },
   { label: "CV Manager",   icon: <IconDocument />,     badge: null },
   { label: "Settings",     icon: <IconGear />,         badge: null },
@@ -164,15 +191,21 @@ function Sidebar({ name, field, onSignOut, onReset }) {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ STAT CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highlight }) {
+function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highlight, loading }) {
   return (
     <div className={"db-stat-card" + (highlight ? " highlight" : "")}>
       <div className="db-stat-top">
         <span className="db-stat-label">{label}</span>
         <span className="db-stat-icon" style={{ color: accentColor }}>{icon}</span>
       </div>
-      <div className="db-stat-value">{value}</div>
-      <div className={"db-stat-delta" + (deltaPositive ? " positive" : "")}>{delta}</div>
+      {loading
+        ? <div style={{ marginTop: 8 }}><Shimmer width={80} height={40} /></div>
+        : <div className="db-stat-value">{value}</div>
+      }
+      {loading
+        ? <div style={{ marginTop: 6 }}><Shimmer width={120} height={14} /></div>
+        : <div className={"db-stat-delta" + (deltaPositive ? " positive" : "")}>{delta}</div>
+      }
       <div className="db-stat-bar" style={{ background: accentColor }} />
     </div>
   );
@@ -180,26 +213,91 @@ function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highl
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ PIPELINE BANNER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-const PIPELINE_STEPS = ["Scrape", "Score", "Tailor", "Apply", "Notify"];
+const STEP_KEYS   = ["scrape", "score", "tailor", "apply", "notify"];
+const STEP_LABELS = { scrape: "Scrape", score: "Score", tailor: "Tailor", apply: "Apply", notify: "Notify" };
 
-function PipelineBanner() {
+function PipelineBanner({ pipeline, loading, onRun, running }) {
+  const steps   = pipeline?.steps ?? {};
+  const lastRun = formatLastRun(pipeline?.last_run);
+
   return (
     <div className="db-pipeline">
       <div className="db-pipeline-left">
         <div className="db-pipeline-title">Pipeline status</div>
         <div className="db-pipeline-sub">
-          Last run: <span className="db-mono">2 hours ago</span> · 39 new jobs found
+          Last run: <span className="db-mono">{loading ? "—" : lastRun}</span>
         </div>
       </div>
       <div className="db-pipeline-steps">
-        {PIPELINE_STEPS.map((step, i) => (
-          <span key={step} className="db-pipeline-step-wrap">
-            {i > 0 && <span className="db-pipeline-arrow">→</span>}
-            <span className="db-pipeline-step done">✓ {step}</span>
-          </span>
-        ))}
+        {STEP_KEYS.map((key, i) => {
+          const done = steps[key] === "complete";
+          return (
+            <span key={key} className="db-pipeline-step-wrap">
+              {i > 0 && <span className="db-pipeline-arrow">→</span>}
+              <span className={"db-pipeline-step" + (done ? " done" : "")}>
+                {done ? "✓" : "○"} {STEP_LABELS[key]}
+              </span>
+            </span>
+          );
+        })}
       </div>
-      <button className="db-run-btn">Run now</button>
+      <button className="db-run-btn" onClick={onRun} disabled={running || loading}>
+        {running ? "Running…" : "Run now"}
+      </button>
+    </div>
+  );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SCORE QUEUE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function ScoreQueueSection({ queue, loading }) {
+  return (
+    <div className="db-queue">
+      <div className="db-queue-header">
+        <span className="db-queue-title">Score queue</span>
+        <span className="db-queue-sub">Jobs scored ≥ 70</span>
+      </div>
+      {loading ? (
+        <div className="db-queue-list">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="db-queue-card">
+              <Shimmer width="60%" height={16} />
+              <div style={{ marginTop: 6 }}><Shimmer width="40%" height={12} /></div>
+            </div>
+          ))}
+        </div>
+      ) : queue.length === 0 ? (
+        <p className="db-queue-empty">
+          No jobs in queue yet — run the scorer to see results
+        </p>
+      ) : (
+        <div className="db-queue-list">
+          {queue.map(job => (
+            <a
+              key={job.id}
+              href={job.url || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="db-queue-card"
+            >
+              <div className="db-queue-card-top">
+                <span className="db-queue-job-title">{job.title}</span>
+                <span className="db-queue-score" style={{
+                  color: job.score >= 85 ? "#059669" : job.score >= 70 ? "#7c3aed" : "#9ca3af"
+                }}>
+                  {Math.round(job.score)}
+                </span>
+              </div>
+              <div className="db-queue-meta">
+                {job.company && <span>{job.company}</span>}
+                {job.company && job.location && <span className="db-queue-dot">·</span>}
+                {job.location && <span>{job.location}</span>}
+                {job.source && <span className="db-queue-source">{job.source}</span>}
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -212,6 +310,13 @@ export default function DashboardPage() {
   const [field, setField] = useState("");
   const [ready, setReady] = useState(false);
 
+  const [stats,    setStats]    = useState(null);
+  const [pipeline, setPipeline] = useState(null);
+  const [queue,    setQueue]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(false);
+  const [running,  setRunning]  = useState(false);
+
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
     const session = getSession();
@@ -219,12 +324,38 @@ export default function DashboardPage() {
     const firstField = session?.onboardingData?.fields?.[0];
     setField(firstField ? FIELD_NAMES[firstField] || "" : "");
     setReady(true);
+
+    Promise.all([getStats(), getPipelineStatus(), getScoreQueue(3)])
+      .then(([s, p, q]) => {
+        setStats(s);
+        setPipeline(p);
+        setQueue(q);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function signOut()        { clearSession(); router.push("/auth"); }
-  function resetOnboarding(){ clearSession(); router.push("/onboarding"); }
+  function signOut()         { clearSession(); router.push("/auth"); }
+  function resetOnboarding() { clearSession(); router.push("/onboarding"); }
+
+  async function handleRunNow() {
+    setRunning(true);
+    try { await triggerPipeline(); } catch (_) {}
+    setTimeout(async () => {
+      try {
+        const [s, p, q] = await Promise.all([getStats(), getPipelineStatus(), getScoreQueue(3)]);
+        setStats(s); setPipeline(p); setQueue(q);
+      } catch (_) {}
+      setRunning(false);
+    }, 2000);
+  }
 
   if (!ready) return null;
+
+  const v = (val) => error ? "--" : val ?? "--";
 
   return (
     <div className="db-shell">
@@ -235,7 +366,11 @@ export default function DashboardPage() {
         <div className="db-header">
           <h1 className="db-greeting">{getGreeting()}, {name || "there"}</h1>
           <p className="db-subhead">
-            Your agent ran <span className="db-mono">2 hours ago</span> · Next run at <span className="db-mono">2:00 AM</span>
+            Your agent ran{" "}
+            <span className="db-mono">
+              {loading ? "—" : formatLastRun(pipeline?.last_run)}
+            </span>{" "}
+            · Next run at <span className="db-mono">2:00 AM</span>
           </p>
         </div>
 
@@ -244,40 +379,54 @@ export default function DashboardPage() {
           <StatCard
             label="JOBS INDEXED"
             icon={<IconDatabase />}
-            value="473"
-            delta="+39 added last night"
-            deltaPositive
+            value={v(stats?.jobs_indexed?.toLocaleString())}
+            delta={error ? "—" : `+${stats?.jobs_added_last_run ?? 0} added last 24h`}
+            deltaPositive={!error && (stats?.jobs_added_last_run ?? 0) > 0}
             accentColor="#4361ee"
+            loading={loading}
           />
           <StatCard
             label="SCORE QUEUE"
             icon={<IconStar />}
-            value="6"
+            value={v(stats?.score_queue)}
             delta="jobs scored 70 or above"
-            deltaPositive={false}
+            deltaPositive={!error && (stats?.score_queue ?? 0) > 0}
             accentColor="#7c3aed"
             highlight
+            loading={loading}
           />
           <StatCard
             label="APPLICATIONS SENT"
             icon={<IconSend />}
-            value="3"
+            value={v(stats?.applications_sent)}
             delta="this week"
             deltaPositive={false}
             accentColor="#0891b2"
+            loading={loading}
           />
           <StatCard
             label="INTERVIEWS"
             icon={<IconCalendar />}
-            value="1"
-            delta="active · next on March 20"
-            deltaPositive
+            value={v(stats?.interviews)}
+            delta={stats?.interviews > 0 ? "active" : "none yet"}
+            deltaPositive={!error && (stats?.interviews ?? 0) > 0}
             accentColor="#059669"
+            loading={loading}
           />
         </div>
 
         {/* Pipeline */}
-        <PipelineBanner />
+        <PipelineBanner pipeline={pipeline} loading={loading} onRun={handleRunNow} running={running} />
+
+        {/* Error banner */}
+        {error && (
+          <p className="db-offline-banner">
+            Backend offline — run: <span className="db-mono">cd backend &amp;&amp; uvicorn main:app --reload</span>
+          </p>
+        )}
+
+        {/* Score queue */}
+        <ScoreQueueSection queue={queue} loading={loading} />
       </main>
     </div>
   );
