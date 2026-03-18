@@ -2,63 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSession, isOnboarded, clearSession } from "../../lib/session";
+import { isOnboarded } from "../../lib/session";
 import { getStats, getPipelineStatus, getScoreQueue, triggerPipeline } from "../../lib/api";
+import Sidebar from "../../components/Sidebar";
 import "./dashboard.css";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ ICONS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-function IconGrid() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-    </svg>
-  );
-}
-
-function IconBriefcase() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-    </svg>
-  );
-}
-
-function IconStar() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  );
-}
-
-function IconCheckCircle() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-    </svg>
-  );
-}
-
-function IconDocument() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-    </svg>
-  );
-}
-
-function IconGear() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  );
-}
 
 function IconDatabase() {
   return (
@@ -98,14 +47,6 @@ function getGreeting() {
   return "Good evening";
 }
 
-function getInitials(name) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  return parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : parts[0][0].toUpperCase();
-}
-
 function formatLastRun(isoString) {
   if (!isoString) return "Never";
   const diff = Date.now() - new Date(isoString).getTime();
@@ -116,13 +57,6 @@ function formatLastRun(isoString) {
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
-
-const FIELD_NAMES = {
-  tech: "Technology", data: "Data & Analytics", biz: "Business & Finance",
-  mkt: "Marketing", eng: "Engineering", health: "Health Sciences",
-  design: "Architecture & Design", law: "Law & Policy", sci: "Science & Research",
-  other: "Other",
-};
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -139,55 +73,7 @@ function Shimmer({ width = 80, height = 40 }) {
   );
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-const NAV_ITEMS = [
-  { label: "Dashboard",    icon: <IconGrid />,         badge: null },
-  { label: "Jobs",         icon: <IconBriefcase />,    badge: null },
-  { label: "Score queue",  icon: <IconStar />,         badge: null },
-  { label: "Applications", icon: <IconCheckCircle />,  badge: null },
-  { label: "CV Manager",   icon: <IconDocument />,     badge: null },
-  { label: "Settings",     icon: <IconGear />,         badge: null },
-];
-
-function Sidebar({ name, field, onSignOut, onReset }) {
-  return (
-    <aside className="db-sidebar">
-      <div className="db-sidebar-top">
-        <div className="db-logo">job-hunter</div>
-        <div className="db-agent-status">
-          <span className="db-agent-dot" />
-          Agent active
-        </div>
-        <nav className="db-nav">
-          {NAV_ITEMS.map((item, i) => (
-            <div key={item.label} className={"db-nav-item" + (i === 0 ? " active" : "")}>
-              <span className="db-nav-icon">{item.icon}</span>
-              <span className="db-nav-label">{item.label}</span>
-              {item.badge && <span className="db-nav-badge">{item.badge}</span>}
-            </div>
-          ))}
-        </nav>
-      </div>
-
-      <div className="db-sidebar-bottom">
-        <div className="db-user-row">
-          <div className="db-avatar">{getInitials(name)}</div>
-          <div className="db-user-info">
-            <div className="db-user-name">{name || "You"}</div>
-            <div className="db-user-sub">{field || "Co-op student"}</div>
-          </div>
-        </div>
-        <button className="db-signout" onClick={onSignOut}>Sign out</button>
-        {process.env.NODE_ENV === "development" && (
-          <button className="db-signout db-reset" onClick={onReset} style={{ marginTop: "4px", color: "#fca5a5" }}>
-            Reset onboarding
-          </button>
-        )}
-      </div>
-    </aside>
-  );
-}
+/* Sidebar is now the shared component — imported above */
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ STAT CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -306,8 +192,6 @@ function ScoreQueueSection({ queue, loading }) {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [name,  setName]  = useState("");
-  const [field, setField] = useState("");
   const [ready, setReady] = useState(false);
 
   const [stats,    setStats]    = useState(null);
@@ -319,10 +203,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
-    const session = getSession();
-    setName(session?.name || "");
-    const firstField = session?.onboardingData?.fields?.[0];
-    setField(firstField ? FIELD_NAMES[firstField] || "" : "");
     setReady(true);
 
     Promise.all([getStats(), getPipelineStatus(), getScoreQueue(3)])
@@ -338,8 +218,7 @@ export default function DashboardPage() {
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function signOut()         { clearSession(); router.push("/auth"); }
-  function resetOnboarding() { clearSession(); router.push("/onboarding"); }
+  // signOut/resetOnboarding now live inside the shared Sidebar component
 
   async function handleRunNow() {
     setRunning(true);
@@ -359,12 +238,12 @@ export default function DashboardPage() {
 
   return (
     <div className="db-shell">
-      <Sidebar name={name} field={field} onSignOut={signOut} onReset={resetOnboarding} />
+      <Sidebar activePage="dashboard" />
 
       <main className="db-main">
         {/* Header */}
         <div className="db-header">
-          <h1 className="db-greeting">{getGreeting()}, {name || "there"}</h1>
+          <h1 className="db-greeting">{getGreeting()}</h1>
           <p className="db-subhead">
             Your agent ran{" "}
             <span className="db-mono">
