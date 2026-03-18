@@ -226,6 +226,13 @@
   white-space: nowrap;
 }
 
+.ind-type-tag.green {
+  font-weight: 500;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
 /* ── Score tag (in list card) ── */
 
 .ind-score-tag {

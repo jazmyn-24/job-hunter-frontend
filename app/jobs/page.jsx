@@ -35,20 +35,30 @@ function scoreTier(score) {
 
 function extractTerm(job) {
   const combined = ((job.title || "") + " " + (job.description || "")).toLowerCase();
-  if (combined.includes("fall 2026"))   return "Fall 2026";
-  if (combined.includes("summer 2026")) return "Summer 2026";
-  if (combined.includes("winter 2026")) return "Winter 2026";
-  if (combined.includes("spring 2026")) return "Spring 2026";
+  if (combined.includes("fall 2026"))    return "Fall 2026";
+  if (combined.includes("summer 2026"))  return "Summer 2026";
+  if (combined.includes("winter 2026"))  return "Winter 2026";
+  if (combined.includes("spring 2026"))  return "Spring 2026";
   if (combined.includes("january 2026")) return "Jan 2026";
-  if (combined.includes("may 2026"))    return "May 2026";
-  if (combined.includes("fall 2027"))   return "Fall 2027";
-  if (combined.includes("summer 2027")) return "Summer 2027";
-  if (combined.includes("2026"))        return "2026";
-  if (combined.includes("2027"))        return "2027";
+  if (combined.includes("may 2026"))     return "May 2026";
+  if (combined.includes("fall 2027"))    return "Fall 2027";
+  if (combined.includes("summer 2027"))  return "Summer 2027";
+  if (combined.includes("2026"))         return "2026";
+  if (combined.includes("2027"))         return "2027";
   const title = (job.title || "").toLowerCase();
   if (title.includes("co-op") || title.includes("coop")) return "Co-op";
-  if (title.includes("intern"))   return "Internship";
-  if (title.includes("student"))  return "Student";
+  if (title.includes("intern"))     return "Internship";
+  if (title.includes("student"))    return "Student";
+  if (title.includes("placement"))  return "Placement";
+  return "Co-op / Intern";
+}
+
+function extractJobType(job) {
+  const title = (job.title || "").toLowerCase();
+  if (title.includes("co-op") || title.includes("coop")) return "Co-op";
+  if (title.includes("intern"))    return "Internship";
+  if (title.includes("student"))   return "Student";
+  if (title.includes("placement")) return "Placement";
   return "Co-op / Intern";
 }
 
@@ -107,10 +117,11 @@ function ShimmerCard() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function JobCard({ job, selected, onClick }) {
-  const tier   = scoreTier(job.score);
-  const date   = relativeDate(job.scraped_at || job.posted_at);
-  const scored = hasScore(job.score);
-  const term   = extractTerm(job);
+  const tier     = scoreTier(job.score);
+  const date     = relativeDate(job.scraped_at || job.posted_at);
+  const scored   = hasScore(job.score);
+  const term     = extractTerm(job);
+  const jobType  = extractJobType(job);
 
   return (
     <div
@@ -126,7 +137,7 @@ function JobCard({ job, selected, onClick }) {
       )}
       <div className="ind-card-tags">
         <span className="ind-term-chip">{term}</span>
-        {job.job_type && <span className="ind-type-tag">{job.job_type}</span>}
+        <span className="ind-type-tag green">{jobType}</span>
         {scored ? (
           <span className={`ind-score-tag ${tier}`}>{Math.round(job.score)} match</span>
         ) : (
@@ -156,10 +167,11 @@ function EmptyState() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB DETAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function JobDetail({ job, onBack }) {
-  const scored  = hasScore(job.score);
-  const tier    = scoreTier(job.score);
-  const posted  = relativeDate(job.posted_at || job.scraped_at);
-  const term    = extractTerm(job);
+  const scored   = hasScore(job.score);
+  const tier     = scoreTier(job.score);
+  const posted   = relativeDate(job.posted_at || job.scraped_at);
+  const term     = extractTerm(job);
+  const jobType  = extractJobType(job);
 
   const hasLongDesc = job.description && job.description.length > 500;
   const [desc,        setDesc]        = useState(job.description || "");
@@ -210,7 +222,8 @@ function JobDetail({ job, onBack }) {
 
       <div className="ind-detail-meta">
         <span className="ind-term-chip">{term}</span>
-        {job.job_type && <><span className="ind-meta-sep">·</span><span className="ind-type-tag">{job.job_type}</span></>}
+        <span className="ind-meta-sep">·</span>
+        <span className="ind-type-tag green">{jobType}</span>
         {posted && <><span className="ind-meta-sep">·</span><span className="ind-meta-date">{posted}</span></>}
         {scored ? (
           <><span className="ind-meta-sep">·</span><span className={`ind-score-pill ${tier}`}>{Math.round(job.score)} / 100</span></>
@@ -401,11 +414,11 @@ export default function JobsPage() {
             </div>
           </div>
 
-          {period === "fall2026" && (
-            <div className="ind-period-banner">
-              Showing co-op and internship positions for Fall 2026 and beyond
-            </div>
-          )}
+          <div className="ind-period-banner">
+            Showing co-op and internship positions only
+            {period === "fall2026" && " · Fall 2026 and beyond"}
+            {" "}· {loading ? "…" : total.toLocaleString()} matching
+          </div>
 
           <div className="ind-list" ref={listRef}>
             {loading
