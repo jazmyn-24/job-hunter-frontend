@@ -1,15 +1,15 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHELL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-shell {
+.ind-shell {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #f8f9fb;
+  background: #f3f2ef;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-main {
+.ind-main {
   margin-left: 220px;
   display: flex;
   flex: 1;
@@ -19,10 +19,10 @@
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ LEFT PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-left {
-  width: 400px;
+.ind-left {
+  width: 420px;
   flex-shrink: 0;
-  border-right: 1px solid #eaecf0;
+  border-right: 1px solid #e4e2e0;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -30,390 +30,432 @@
   background: #ffffff;
 }
 
-/* ── Top bar ── */
+/* ── Topbar ── */
 
-.jobs-topbar {
-  padding: 20px;
-  border-bottom: 1px solid #eaecf0;
+.ind-topbar {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #e4e2e0;
   flex-shrink: 0;
+  background: #ffffff;
 }
 
-.jobs-title-row {
+.ind-topbar-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 10px;
 }
 
-.jobs-title {
+.ind-topbar-title {
   font-family: "Bricolage Grotesque", sans-serif;
   font-size: 20px;
-  font-weight: 600;
-  color: #0a0a0a;
+  font-weight: 700;
+  color: #1a1a1a;
   letter-spacing: -0.02em;
 }
 
-.jobs-count-badge {
+.ind-count-badge {
   font-family: "DM Mono", monospace;
   font-size: 10px;
-  color: #9ca3af;
-  background: #f8f9fb;
-  border: 1px solid #eaecf0;
+  color: #767676;
+  background: #f3f2ef;
+  border: 1px solid #e4e2e0;
   border-radius: 20px;
   padding: 2px 8px;
 }
 
-.jobs-sort-bar {
+/* ── Chip rows ── */
+
+.ind-chip-row {
   display: flex;
   gap: 6px;
-  margin-top: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
 }
 
-.jobs-sort-chip {
-  font-family: "DM Mono", monospace;
-  font-size: 11px;
-  color: #6b7280;
-  background: #f8f9fb;
-  border: 1px solid #eaecf0;
-  border-radius: 6px;
-  padding: 6px 12px;
+.ind-chip-row:last-child {
+  margin-bottom: 0;
+}
+
+.ind-chip {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #595959;
+  background: #f3f2ef;
+  border: 1px solid #e4e2e0;
+  border-radius: 20px;
+  padding: 5px 14px;
   cursor: pointer;
   transition: all 0.1s;
+  white-space: nowrap;
 }
 
-.jobs-sort-chip.active {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  color: #4361ee;
+.ind-chip:hover {
+  background: #e8f0fe;
+  border-color: #2557a7;
+  color: #2557a7;
 }
 
-/* ── Job list ── */
+.ind-chip.active {
+  background: #e8f0fe;
+  border-color: #2557a7;
+  color: #2557a7;
+  font-weight: 500;
+}
 
-.jobs-list {
+/* ── Period banner ── */
+
+.ind-period-banner {
+  padding: 8px 16px;
+  background: #f3f2ef;
+  border-bottom: 1px solid #e4e2e0;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #767676;
+  flex-shrink: 0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB LIST ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.ind-list {
   flex: 1;
   overflow-y: auto;
 }
 
-.jobs-list-item {
-  padding: 14px 20px;
-  border-bottom: 1px solid #f5f5f5;
-  border-left: 2px solid transparent;
+/* ── Job card ── */
+
+.ind-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f2ef;
+  border-left: 3px solid transparent;
   cursor: pointer;
+  background: #ffffff;
   transition: background 0.1s;
 }
 
-.jobs-list-item:hover {
-  background: #fafbff;
+.ind-card:hover {
+  background: #f8f8f6;
 }
 
-.jobs-list-item.selected {
-  background: #eef2ff;
-  border-left-color: #4361ee;
+.ind-card.selected {
+  background: #f3f0ff;
+  border-left-color: #2557a7;
 }
 
-.jobs-item-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.ind-card-title {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a0dab;
+  line-height: 1.3;
+  margin-bottom: 3px;
 }
 
-.jobs-item-title {
+.ind-card:hover .ind-card-title {
+  text-decoration: underline;
+}
+
+.ind-card.selected .ind-card-title {
+  color: #1a0dab;
+}
+
+.ind-card-company {
   font-family: "Inter", sans-serif;
   font-size: 13px;
-  font-weight: 500;
-  color: #0a0a0a;
-  flex: 1;
+  color: #595959;
+  margin-bottom: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.jobs-score-badge {
-  font-family: "DM Mono", monospace;
-  font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.jobs-score-badge.high   { background: #dcfce7; color: #15803d; }
-.jobs-score-badge.mid    { background: #fef3c7; color: #b45309; }
-.jobs-score-badge.low    { background: #f1f5f9; color: #6b7280; }
-.jobs-score-badge.none   { background: #f1f5f9; color: #9ca3af; }
-
-.jobs-item-meta {
+.ind-card-tags {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  flex-wrap: wrap;
 }
 
-.jobs-meta-company {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #6b7280;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 110px;
-}
-
-.jobs-meta-sep {
-  font-size: 10px;
-  color: #d1d5db;
-  flex-shrink: 0;
-}
-
-.jobs-meta-location {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #9ca3af;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 90px;
-}
-
-.jobs-meta-source {
-  font-family: "DM Mono", monospace;
-  font-size: 10px;
-  color: #9ca3af;
-  background: #f8f9fb;
-  border: 1px solid #eaecf0;
-  border-radius: 3px;
-  padding: 1px 6px;
-  flex-shrink: 0;
-}
-
-.jobs-meta-date {
+.ind-card-date {
   font-family: "Inter", sans-serif;
   font-size: 11px;
-  color: #c0c4cc;
-  flex-shrink: 0;
+  color: #767676;
   margin-left: auto;
+  flex-shrink: 0;
 }
+
+/* ── Tags ── */
+
+.ind-tag {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: #595959;
+  background: #f3f2ef;
+  border: 1px solid #e4e2e0;
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+.ind-score-tag {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.ind-score-tag.high { background: #e8f0fe; color: #1a0dab; }
+.ind-score-tag.mid  { background: #fef3c7; color: #92400e; }
+.ind-score-tag.low  { background: #f3f2ef; color: #767676; }
+.ind-score-tag.none { display: none; }
 
 /* ── Load more ── */
 
-.jobs-load-more {
+.ind-load-more {
   text-align: center;
   padding: 16px;
   font-family: "DM Mono", monospace;
   font-size: 11px;
-  color: #9ca3af;
+  color: #767676;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RIGHT PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-right {
+.ind-right {
   flex: 1;
   overflow-y: auto;
-  padding: 32px 36px;
   background: #ffffff;
+  border-left: 1px solid #e4e2e0;
 }
 
-/* ── Empty state ── */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ EMPTY STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-empty-state {
+.ind-empty {
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 32px;
 }
 
-.jobs-empty-icon {
-  color: #e5e7eb;
-}
-
-.jobs-empty-title {
+.ind-empty-title {
   font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 12px;
-  margin-bottom: 0;
+  font-size: 15px;
+  color: #595959;
+  margin: 12px 0 4px;
 }
 
-.jobs-empty-sub {
+.ind-empty-sub {
   font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #c0c4cc;
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-/* ── Detail header ── */
-
-.jobs-detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-}
-
-.jobs-detail-left {}
-
-.jobs-detail-title {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  color: #0a0a0a;
-  letter-spacing: -0.02em;
+  font-size: 13px;
+  color: #767676;
   margin: 0;
 }
 
-.jobs-detail-company {
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB DETAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.ind-detail {
+  padding: 28px 36px 48px;
+  max-width: 780px;
+}
+
+/* ── Mobile back button ── */
+
+.ind-back-btn {
   font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 6px;
+  font-size: 13px;
+  color: #2557a7;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 20px;
+  display: block;
 }
 
-.jobs-detail-meta {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
+.ind-back-btn:hover { text-decoration: underline; }
 
-.jobs-detail-source {
-  font-family: "DM Mono", monospace;
-  font-size: 10px;
-  background: #f8f9fb;
-  border: 1px solid #eaecf0;
-  padding: 3px 8px;
-  border-radius: 4px;
-  color: #6b7280;
-}
+/* ── Title / company ── */
 
-.jobs-detail-date {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.jobs-detail-type {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* ── Score circle ── */
-
-.jobs-score-circle {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #eef2ff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.jobs-score-circle-num {
+.ind-detail-title {
   font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 700;
-  color: #4361ee;
-  line-height: 1;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  line-height: 1.2;
 }
 
-.jobs-score-circle-label {
+.ind-detail-company {
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  color: #595959;
+  margin: 0 0 12px;
+}
+
+/* ── Meta row ── */
+
+.ind-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.ind-meta-date {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #767676;
+}
+
+/* ── Score pill ── */
+
+.ind-score-pill {
   font-family: "DM Mono", monospace;
-  font-size: 9px;
-  color: #9ca3af;
-  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
-.jobs-score-circle.unscored .jobs-score-circle-num {
-  font-size: 16px;
-  color: #c0c4cc;
-}
+.ind-score-pill.high { background: #e8f0fe; color: #1a0dab; }
+.ind-score-pill.mid  { background: #fef3c7; color: #92400e; }
+.ind-score-pill.low  { background: #f3f2ef; color: #767676; }
 
 /* ── Action buttons ── */
 
-.jobs-actions {
+.ind-actions {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
-}
-
-.jobs-btn-secondary {
-  background: #ffffff;
-  border: 1px solid #eaecf0;
-  border-radius: 7px;
-  padding: 9px 18px;
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: #0a0a0a;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-  text-decoration: none;
-  display: inline-flex;
   align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
-.jobs-btn-secondary:hover {
-  border-color: #4361ee;
-  color: #4361ee;
-}
-
-.jobs-btn-primary {
-  background: #4361ee;
-  border: none;
-  border-radius: 7px;
-  padding: 9px 18px;
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
+.ind-btn-apply {
+  background: #2557a7;
   color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
 }
 
-.jobs-btn-primary:hover {
-  background: #3451d1;
-}
+.ind-btn-apply:hover { background: #1a3d7a; }
 
-/* ── Description ── */
-
-.jobs-divider {
-  border: none;
-  border-top: 1px solid #f3f4f6;
-  margin: 24px 0;
-}
-
-.jobs-desc-label {
-  font-family: "DM Mono", monospace;
-  font-size: 9px;
-  color: #9ca3af;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.jobs-desc-text {
+.ind-btn-view {
+  background: #ffffff;
+  color: #2557a7;
+  border: 2px solid #2557a7;
+  border-radius: 4px;
+  padding: 9px 18px;
   font-family: "Inter", sans-serif;
   font-size: 14px;
-  color: #374151;
-  line-height: 1.8;
-  white-space: pre-wrap;
-  max-height: 400px;
-  overflow-y: auto;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s;
 }
 
-.jobs-desc-empty {
+.ind-btn-view:hover {
+  background: #e8f0fe;
+}
+
+/* ── Divider ── */
+
+.ind-divider {
+  border: none;
+  border-top: 1px solid #e4e2e0;
+  margin: 0 0 20px;
+}
+
+/* ── Section label ── */
+
+.ind-section-label {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 14px;
+}
+
+.ind-cached-badge {
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  color: #767676;
+  margin-left: 6px;
+  font-weight: 400;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DESCRIPTION ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.ind-desc-body {
+  font-family: "Inter", sans-serif;
+}
+
+.ind-desc-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 18px 0 6px;
+}
+
+.ind-desc-para {
+  font-size: 14px;
+  color: #3a3a3a;
+  line-height: 1.75;
+  margin: 0 0 10px;
+}
+
+.ind-desc-bullet {
+  display: flex;
+  gap: 8px;
+  padding-left: 4px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #3a3a3a;
+  line-height: 1.6;
+}
+
+.ind-desc-dot {
+  color: #767676;
+  flex-shrink: 0;
+}
+
+.ind-fetching-label {
   font-family: "Inter", sans-serif;
   font-size: 13px;
-  color: #9ca3af;
+  color: #767676;
+  margin: 0 0 10px;
+}
+
+.ind-no-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  color: #767676;
   font-style: italic;
 }
+
+.ind-fallback-link {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #2557a7;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.ind-fallback-link:hover { text-decoration: underline; }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -422,94 +464,45 @@
   to   { background-position: -200% 0; }
 }
 
-.jobs-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+.ind-shimmer {
+  background: linear-gradient(90deg, #ebebeb 25%, #e0e0e0 50%, #ebebeb 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 6px;
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ FILTER BAR ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ MOBILE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.jobs-filter-bar {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
+@media (max-width: 768px) {
+  .ind-main {
+    margin-left: 0;
+  }
+
+  .ind-left {
+    width: 100%;
+  }
+
+  .ind-right {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    overflow-y: auto;
+  }
+
+  .ind-hidden-mobile {
+    display: none !important;
+  }
+
+  .ind-detail {
+    padding: 20px 18px 48px;
+  }
+
+  .ind-back-btn {
+    display: block;
+  }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ PERIOD BANNER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.jobs-period-banner {
-  padding: 8px 20px;
-  background: #f8f9fb;
-  border-bottom: 1px solid #eaecf0;
-  font-family: "DM Mono", monospace;
-  font-size: 10px;
-  color: #9ca3af;
-  flex-shrink: 0;
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ FORMATTED DESCRIPTION ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-.jobs-desc-header {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: #0a0a0a;
-  margin-top: 16px;
-  margin-bottom: 6px;
-}
-
-.jobs-desc-para {
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.8;
-  margin-bottom: 8px;
-  margin-top: 0;
-}
-
-.jobs-desc-bullet {
-  display: flex;
-  gap: 8px;
-  padding-left: 8px;
-  margin-bottom: 4px;
-  font-family: "Inter", sans-serif;
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.6;
-}
-
-.jobs-desc-bullet-dot {
-  color: #9ca3af;
-  flex-shrink: 0;
-}
-
-.jobs-desc-fetch-label {
-  font-family: "DM Mono", monospace;
-  font-size: 11px;
-  color: #9ca3af;
-  margin-bottom: 8px;
-}
-
-.jobs-desc-fallback-link {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #4361ee;
-  text-decoration: none;
-  display: inline-block;
-  margin-top: 8px;
-}
-
-.jobs-desc-fallback-link:hover {
-  text-decoration: underline;
-}
-
-.jobs-desc-cached {
-  font-family: "DM Mono", monospace;
-  font-size: 9px;
-  color: #c0c4cc;
-  margin-left: 6px;
-  letter-spacing: 0;
-  text-transform: none;
+@media (min-width: 769px) {
+  .ind-back-btn {
+    display: none;
+  }
 }

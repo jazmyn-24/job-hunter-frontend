@@ -6,7 +6,6 @@ import { isOnboarded } from "../../lib/session";
 import { getJobs, getJobDescription } from "../../lib/api";
 import Sidebar from "../../components/Sidebar";
 import "./jobs.css";
-import "../dashboard/dashboard.css";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ HELPERS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -24,16 +23,11 @@ function relativeDate(isoString) {
   return `${months} month${months !== 1 ? "s" : ""} ago`;
 }
 
-function scoreBadgeClass(score) {
-  if (score === null || score === undefined || score === 0) return "none";
+function scoreTier(score) {
+  if (!score || score === 0) return "none";
   if (score >= 70) return "high";
   if (score >= 50) return "mid";
   return "low";
-}
-
-function scoreBadgeText(score) {
-  if (!score) return "—";
-  return String(Math.round(score));
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DESCRIPTION FORMATTER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -41,7 +35,7 @@ function scoreBadgeText(score) {
 function FormattedDescription({ text }) {
   const lines = text.split("\n").filter(l => l.trim().length > 0);
   return (
-    <div className="jobs-desc-formatted">
+    <div className="ind-desc-body">
       {lines.map((line, i) => {
         const trimmed = line.trim();
         const isHeader =
@@ -50,66 +44,68 @@ function FormattedDescription({ text }) {
         const isBullet = /^[•\-\*]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed);
 
         if (isHeader) {
-          return <p key={i} className="jobs-desc-header">{trimmed}</p>;
+          return <p key={i} className="ind-desc-header">{trimmed}</p>;
         }
         if (isBullet) {
           const content = trimmed.replace(/^[•\-\*]\s*|^\d+[\.\)]\s*/, "");
           return (
-            <div key={i} className="jobs-desc-bullet">
-              <span className="jobs-desc-bullet-dot">•</span>
+            <div key={i} className="ind-desc-bullet">
+              <span className="ind-desc-dot">•</span>
               <span>{content}</span>
             </div>
           );
         }
-        return <p key={i} className="jobs-desc-para">{trimmed}</p>;
+        return <p key={i} className="ind-desc-para">{trimmed}</p>;
       })}
     </div>
   );
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ROW ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function ShimmerRow() {
+function Shimmer({ width, height, style = {} }) {
   return (
-    <div className="jobs-list-item" style={{ cursor: "default" }}>
-      <div className="jobs-item-top">
-        <div className="jobs-shimmer" style={{ width: "60%", height: 14 }} />
-        <div className="jobs-shimmer" style={{ width: 28, height: 14 }} />
-      </div>
-      <div className="jobs-item-meta" style={{ marginTop: 6 }}>
-        <div className="jobs-shimmer" style={{ width: 80, height: 11 }} />
-        <div className="jobs-shimmer" style={{ width: 60, height: 11 }} />
-      </div>
+    <div
+      className="ind-shimmer"
+      style={{ width, height, borderRadius: 4, ...style }}
+    />
+  );
+}
+
+function ShimmerCard() {
+  return (
+    <div className="ind-card" style={{ cursor: "default" }}>
+      <Shimmer width="65%" height={16} />
+      <Shimmer width="40%" height={13} style={{ marginTop: 6 }} />
+      <Shimmer width="30%" height={11} style={{ marginTop: 6 }} />
     </div>
   );
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB LIST ITEM ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function JobListItem({ job, selected, onClick }) {
-  const cls = scoreBadgeClass(job.score);
+function JobCard({ job, selected, onClick }) {
+  const tier = scoreTier(job.score);
   const date = relativeDate(job.scraped_at || job.posted_at);
 
   return (
     <div
-      className={"jobs-list-item" + (selected ? " selected" : "")}
+      className={"ind-card" + (selected ? " selected" : "")}
       onClick={onClick}
     >
-      <div className="jobs-item-top">
-        <span className="jobs-item-title">{job.title}</span>
-        <span className={`jobs-score-badge ${cls}`}>{scoreBadgeText(job.score)}</span>
+      <div className="ind-card-title">{job.title}</div>
+      <div className="ind-card-company">
+        {[job.company, job.location].filter(Boolean).join(" · ")}
       </div>
-      <div className="jobs-item-meta">
-        {job.company && <span className="jobs-meta-company">{job.company}</span>}
-        {job.company && job.location && <span className="jobs-meta-sep">·</span>}
-        {job.location && <span className="jobs-meta-location">{job.location}</span>}
-        {job.source && (
-          <>
-            <span className="jobs-meta-sep">·</span>
-            <span className="jobs-meta-source">{job.source}</span>
-          </>
+      <div className="ind-card-tags">
+        {job.source && <span className="ind-tag">{job.source}</span>}
+        {job.job_type && <span className="ind-tag">{job.job_type}</span>}
+        {job.score > 0 && (
+          <span className={`ind-score-tag ${tier}`}>
+            {Math.round(job.score)} match
+          </span>
         )}
-        {date && <span className="jobs-meta-date">{date}</span>}
+        {date && <span className="ind-card-date">{date}</span>}
       </div>
     </div>
   );
@@ -119,22 +115,23 @@ function JobListItem({ job, selected, onClick }) {
 
 function EmptyState() {
   return (
-    <div className="jobs-empty-state">
-      <svg className="jobs-empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <div className="ind-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0c4cc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
-      <p className="jobs-empty-title">Select a job to view details</p>
-      <p className="jobs-empty-sub">Click any job on the left to see the full posting</p>
+      <p className="ind-empty-title">Select a job to view details</p>
+      <p className="ind-empty-sub">Click any listing on the left</p>
     </div>
   );
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB DETAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function JobDetail({ job }) {
+function JobDetail({ job, onBack }) {
   const scored = job.score && job.score > 0;
-  const postedDate = relativeDate(job.posted_at || job.scraped_at);
+  const tier   = scoreTier(job.score);
+  const posted = relativeDate(job.posted_at || job.scraped_at);
 
   const hasLongDesc = job.description && job.description.length > 500;
   const [desc,        setDesc]        = useState(job.description || "");
@@ -168,75 +165,75 @@ function JobDetail({ job }) {
   }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div>
-      {/* Header */}
-      <div className="jobs-detail-header">
-        <div className="jobs-detail-left">
-          <h1 className="jobs-detail-title">{job.title}</h1>
-          {(job.company || job.location) && (
-            <p className="jobs-detail-company">
-              {[job.company, job.location].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          <div className="jobs-detail-meta">
-            {job.source   && <span className="jobs-detail-source">{job.source}</span>}
-            {postedDate   && <span className="jobs-detail-date">{postedDate}</span>}
-            {job.job_type && <span className="jobs-detail-type">{job.job_type}</span>}
-          </div>
-        </div>
+    <div className="ind-detail">
+      {/* Mobile back */}
+      {onBack && (
+        <button className="ind-back-btn" onClick={onBack}>
+          ← Back to results
+        </button>
+      )}
 
-        <div className={`jobs-score-circle${scored ? "" : " unscored"}`}>
-          <span className="jobs-score-circle-num">
-            {scored ? Math.round(job.score) : "—"}
+      {/* Header */}
+      <h1 className="ind-detail-title">{job.title}</h1>
+      {(job.company || job.location) && (
+        <p className="ind-detail-company">
+          {[job.company, job.location].filter(Boolean).join(" · ")}
+        </p>
+      )}
+
+      <div className="ind-detail-meta">
+        {job.source   && <span className="ind-tag">{job.source}</span>}
+        {job.job_type && <span className="ind-tag">{job.job_type}</span>}
+        {posted       && <span className="ind-meta-date">{posted}</span>}
+        {scored && (
+          <span className={`ind-score-pill ${tier}`}>
+            {Math.round(job.score)} / 100
           </span>
-          <span className="jobs-score-circle-label">
-            {scored ? "score" : "not scored"}
-          </span>
-        </div>
+        )}
       </div>
 
       {/* Actions */}
-      <div className="jobs-actions">
+      <div className="ind-actions">
+        <button className="ind-btn-apply">Apply now</button>
         <a
           href={job.url || "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="jobs-btn-secondary"
+          className="ind-btn-view"
         >
           View original posting →
         </a>
-        <button className="jobs-btn-primary">Apply manually</button>
       </div>
 
-      <hr className="jobs-divider" />
+      <hr className="ind-divider" />
 
       {/* Description */}
-      <p className="jobs-desc-label">
-        Description
-        {descCached && <span className="jobs-desc-cached">· cached</span>}
+      <p className="ind-section-label">
+        About the job
+        {descCached && <span className="ind-cached-badge">· cached</span>}
       </p>
 
       {descLoading ? (
         <div>
-          <p className="jobs-desc-fetch-label">Fetching full description…</p>
-          <div className="jobs-shimmer" style={{ width: "90%", height: 13, marginBottom: 8 }} />
-          <div className="jobs-shimmer" style={{ width: "75%", height: 13, marginBottom: 8 }} />
-          <div className="jobs-shimmer" style={{ width: "55%", height: 13 }} />
+          <p className="ind-fetching-label">Fetching full description…</p>
+          <Shimmer width="90%" height={13} style={{ marginBottom: 8 }} />
+          <Shimmer width="75%" height={13} style={{ marginBottom: 8 }} />
+          <Shimmer width="55%" height={13} />
         </div>
       ) : desc ? (
         <>
           <FormattedDescription text={desc} />
           {descFailed && job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="jobs-desc-fallback-link">
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">
               View on original site →
             </a>
           )}
         </>
       ) : (
         <>
-          <p className="jobs-desc-empty">No description available for this posting.</p>
+          <p className="ind-no-desc">No description available for this posting.</p>
           {job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="jobs-desc-fallback-link">
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">
               View on original site →
             </a>
           )}
@@ -251,7 +248,7 @@ function JobDetail({ job }) {
 const PAGE_SIZE = 50;
 
 const PERIOD_LABELS = {
-  upcoming: "Fall 2026+",
+  fall2026: "Fall 2026+",
   all:      "All jobs",
   "2027":   "2027+",
 };
@@ -264,10 +261,11 @@ export default function JobsPage() {
   const [total,       setTotal]       = useState(0);
   const [selectedJob, setSelectedJob] = useState(null);
   const [sort,        setSort]        = useState("newest");
-  const [period,      setPeriod]      = useState("upcoming");
+  const [period,      setPeriod]      = useState("fall2026");
   const [loading,     setLoading]     = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset,      setOffset]      = useState(0);
+  const [mobileView,  setMobileView]  = useState("list");
 
   const listRef   = useRef(null);
   const detailRef = useRef(null);
@@ -277,7 +275,6 @@ export default function JobsPage() {
     setReady(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load jobs on mount, sort change, or period change
   useEffect(() => {
     if (!ready) return;
     setLoading(true);
@@ -316,55 +313,51 @@ export default function JobsPage() {
 
   function handleJobClick(job) {
     setSelectedJob(job);
+    setMobileView("detail");
     if (detailRef.current) detailRef.current.scrollTop = 0;
-  }
-
-  function handleSortChange(newSort) {
-    if (newSort === sort) return;
-    setSort(newSort);
-  }
-
-  function handlePeriodChange(newPeriod) {
-    if (newPeriod === period) return;
-    setPeriod(newPeriod);
   }
 
   if (!ready) return null;
 
   return (
-    <div className="jobs-shell">
+    <div className="ind-shell">
       <Sidebar activePage="jobs" />
 
-      <div className="jobs-main">
+      <div className="ind-main">
         {/* ── Left panel ── */}
-        <div className="jobs-left">
-          <div className="jobs-topbar">
-            <div className="jobs-title-row">
-              <span className="jobs-title">Jobs</span>
-              <span className="jobs-count-badge">
+        <div className={"ind-left" + (mobileView === "detail" ? " ind-hidden-mobile" : "")}>
+          {/* Topbar */}
+          <div className="ind-topbar">
+            <div className="ind-topbar-row">
+              <span className="ind-topbar-title">Jobs</span>
+              <span className="ind-count-badge">
                 {total.toLocaleString()} {period === "all" ? "total" : "matching"}
               </span>
             </div>
-            <div className="jobs-sort-bar">
+
+            {/* Sort chips */}
+            <div className="ind-chip-row">
               <button
-                className={"jobs-sort-chip" + (sort === "newest" ? " active" : "")}
-                onClick={() => handleSortChange("newest")}
+                className={"ind-chip" + (sort === "newest" ? " active" : "")}
+                onClick={() => sort !== "newest" && setSort("newest")}
               >
-                Newest first
+                Newest
               </button>
               <button
-                className={"jobs-sort-chip" + (sort === "score" ? " active" : "")}
-                onClick={() => handleSortChange("score")}
+                className={"ind-chip" + (sort === "score" ? " active" : "")}
+                onClick={() => sort !== "score" && setSort("score")}
               >
-                Highest score
+                Best match
               </button>
             </div>
-            <div className="jobs-filter-bar">
+
+            {/* Period chips */}
+            <div className="ind-chip-row">
               {Object.entries(PERIOD_LABELS).map(([key, label]) => (
                 <button
                   key={key}
-                  className={"jobs-sort-chip" + (period === key ? " active" : "")}
-                  onClick={() => handlePeriodChange(key)}
+                  className={"ind-chip" + (period === key ? " active" : "")}
+                  onClick={() => period !== key && setPeriod(key)}
                 >
                   {label}
                 </button>
@@ -372,17 +365,18 @@ export default function JobsPage() {
             </div>
           </div>
 
-          {period === "upcoming" && (
-            <div className="jobs-period-banner">
+          {period === "fall2026" && (
+            <div className="ind-period-banner">
               Showing co-op and internship positions for Fall 2026 and beyond
             </div>
           )}
 
-          <div className="jobs-list" ref={listRef}>
+          {/* Job list */}
+          <div className="ind-list" ref={listRef}>
             {loading
-              ? Array.from({ length: 12 }, (_, i) => <ShimmerRow key={i} />)
+              ? Array.from({ length: 12 }, (_, i) => <ShimmerCard key={i} />)
               : jobs.map(job => (
-                  <JobListItem
+                  <JobCard
                     key={job.id}
                     job={job}
                     selected={selectedJob?.id === job.id}
@@ -391,15 +385,23 @@ export default function JobsPage() {
                 ))
             }
             {loadingMore && (
-              <div className="jobs-load-more">Loading more…</div>
+              <div className="ind-load-more">Loading more…</div>
             )}
           </div>
         </div>
 
         {/* ── Right panel ── */}
-        <div className="jobs-right" ref={detailRef}>
+        <div
+          className={"ind-right" + (mobileView === "list" ? " ind-hidden-mobile" : "")}
+          ref={detailRef}
+        >
           {selectedJob
-            ? <JobDetail job={selectedJob} />
+            ? (
+              <JobDetail
+                job={selectedJob}
+                onBack={mobileView === "detail" ? () => setMobileView("list") : null}
+              />
+            )
             : <EmptyState />
           }
         </div>
