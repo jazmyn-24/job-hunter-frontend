@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isOnboarded } from "../../lib/session";
-import { getJobs } from "../../lib/api";
+import { getJobs, getJobDescription } from "../../lib/api";
 import Sidebar from "../../components/Sidebar";
 import "./jobs.css";
 import "../dashboard/dashboard.css";
@@ -34,6 +34,37 @@ function scoreBadgeClass(score) {
 function scoreBadgeText(score) {
   if (!score) return "—";
   return String(Math.round(score));
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DESCRIPTION FORMATTER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+function FormattedDescription({ text }) {
+  const lines = text.split("\n").filter(l => l.trim().length > 0);
+  return (
+    <div className="jobs-desc-formatted">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        const isHeader =
+          (trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed) && trimmed.length >= 4 && trimmed.length < 80) ||
+          (trimmed.endsWith(":") && trimmed.length < 60 && !/^[•\-\*\d]/.test(trimmed));
+        const isBullet = /^[•\-\*]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed);
+
+        if (isHeader) {
+          return <p key={i} className="jobs-desc-header">{trimmed}</p>;
+        }
+        if (isBullet) {
+          const content = trimmed.replace(/^[•\-\*]\s*|^\d+[\.\)]\s*/, "");
+          return (
+            <div key={i} className="jobs-desc-bullet">
+              <span className="jobs-desc-bullet-dot">•</span>
+              <span>{content}</span>
+            </div>
+          );
+        }
+        return <p key={i} className="jobs-desc-para">{trimmed}</p>;
+      })}
+    </div>
+  );
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ROW ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -105,6 +136,37 @@ function JobDetail({ job }) {
   const scored = job.score && job.score > 0;
   const postedDate = relativeDate(job.posted_at || job.scraped_at);
 
+  const hasLongDesc = job.description && job.description.length > 500;
+  const [desc,        setDesc]        = useState(job.description || "");
+  const [descLoading, setDescLoading] = useState(!hasLongDesc);
+  const [descCached,  setDescCached]  = useState(hasLongDesc);
+  const [descFailed,  setDescFailed]  = useState(false);
+
+  useEffect(() => {
+    const longDesc = job.description && job.description.length > 500;
+    setDesc(job.description || "");
+    setDescFailed(false);
+
+    if (longDesc) {
+      setDescCached(true);
+      setDescLoading(false);
+      return;
+    }
+
+    setDescCached(false);
+    setDescLoading(true);
+    getJobDescription(job.id)
+      .then(data => {
+        setDesc(data.description || job.description || "");
+        setDescCached(!!data.cached);
+        setDescLoading(false);
+      })
+      .catch(() => {
+        setDescFailed(true);
+        setDescLoading(false);
+      });
+  }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div>
       {/* Header */}
@@ -117,8 +179,8 @@ function JobDetail({ job }) {
             </p>
           )}
           <div className="jobs-detail-meta">
-            {job.source  && <span className="jobs-detail-source">{job.source}</span>}
-            {postedDate  && <span className="jobs-detail-date">{postedDate}</span>}
+            {job.source   && <span className="jobs-detail-source">{job.source}</span>}
+            {postedDate   && <span className="jobs-detail-date">{postedDate}</span>}
             {job.job_type && <span className="jobs-detail-type">{job.job_type}</span>}
           </div>
         </div>
@@ -149,11 +211,36 @@ function JobDetail({ job }) {
       <hr className="jobs-divider" />
 
       {/* Description */}
-      <p className="jobs-desc-label">Description</p>
-      {job.description ? (
-        <div className="jobs-desc-text">{job.description}</div>
+      <p className="jobs-desc-label">
+        Description
+        {descCached && <span className="jobs-desc-cached">· cached</span>}
+      </p>
+
+      {descLoading ? (
+        <div>
+          <p className="jobs-desc-fetch-label">Fetching full description…</p>
+          <div className="jobs-shimmer" style={{ width: "90%", height: 13, marginBottom: 8 }} />
+          <div className="jobs-shimmer" style={{ width: "75%", height: 13, marginBottom: 8 }} />
+          <div className="jobs-shimmer" style={{ width: "55%", height: 13 }} />
+        </div>
+      ) : desc ? (
+        <>
+          <FormattedDescription text={desc} />
+          {descFailed && job.url && (
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="jobs-desc-fallback-link">
+              View on original site →
+            </a>
+          )}
+        </>
       ) : (
-        <p className="jobs-desc-empty">No description available for this posting.</p>
+        <>
+          <p className="jobs-desc-empty">No description available for this posting.</p>
+          {job.url && (
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="jobs-desc-fallback-link">
+              View on original site →
+            </a>
+          )}
+        </>
       )}
     </div>
   );
@@ -163,6 +250,12 @@ function JobDetail({ job }) {
 
 const PAGE_SIZE = 50;
 
+const PERIOD_LABELS = {
+  upcoming: "Fall 2026+",
+  all:      "All jobs",
+  "2027":   "2027+",
+};
+
 export default function JobsPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
@@ -171,6 +264,7 @@ export default function JobsPage() {
   const [total,       setTotal]       = useState(0);
   const [selectedJob, setSelectedJob] = useState(null);
   const [sort,        setSort]        = useState("newest");
+  const [period,      setPeriod]      = useState("upcoming");
   const [loading,     setLoading]     = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset,      setOffset]      = useState(0);
@@ -183,18 +277,18 @@ export default function JobsPage() {
     setReady(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load jobs on mount or sort change
+  // Load jobs on mount, sort change, or period change
   useEffect(() => {
     if (!ready) return;
     setLoading(true);
     setOffset(0);
-    getJobs(sort, PAGE_SIZE, 0).then(({ total: t, jobs: j }) => {
+    getJobs(sort, PAGE_SIZE, 0, period).then(({ total: t, jobs: j }) => {
       setTotal(t);
       setJobs(j);
       setSelectedJob(j[0] ?? null);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [ready, sort]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, sort, period]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Infinite scroll
   useEffect(() => {
@@ -209,7 +303,7 @@ export default function JobsPage() {
         const nextOffset = offset + PAGE_SIZE;
         setLoadingMore(true);
         setOffset(nextOffset);
-        getJobs(sort, PAGE_SIZE, nextOffset).then(({ jobs: more }) => {
+        getJobs(sort, PAGE_SIZE, nextOffset, period).then(({ jobs: more }) => {
           setJobs(prev => [...prev, ...more]);
           setLoadingMore(false);
         }).catch(() => setLoadingMore(false));
@@ -218,7 +312,7 @@ export default function JobsPage() {
 
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
-  }, [jobs.length, total, loadingMore, offset, sort]);
+  }, [jobs.length, total, loadingMore, offset, sort, period]);
 
   function handleJobClick(job) {
     setSelectedJob(job);
@@ -228,6 +322,11 @@ export default function JobsPage() {
   function handleSortChange(newSort) {
     if (newSort === sort) return;
     setSort(newSort);
+  }
+
+  function handlePeriodChange(newPeriod) {
+    if (newPeriod === period) return;
+    setPeriod(newPeriod);
   }
 
   if (!ready) return null;
@@ -242,7 +341,9 @@ export default function JobsPage() {
           <div className="jobs-topbar">
             <div className="jobs-title-row">
               <span className="jobs-title">Jobs</span>
-              <span className="jobs-count-badge">{total.toLocaleString()} total</span>
+              <span className="jobs-count-badge">
+                {total.toLocaleString()} {period === "all" ? "total" : "matching"}
+              </span>
             </div>
             <div className="jobs-sort-bar">
               <button
@@ -258,7 +359,24 @@ export default function JobsPage() {
                 Highest score
               </button>
             </div>
+            <div className="jobs-filter-bar">
+              {Object.entries(PERIOD_LABELS).map(([key, label]) => (
+                <button
+                  key={key}
+                  className={"jobs-sort-chip" + (period === key ? " active" : "")}
+                  onClick={() => handlePeriodChange(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {period === "upcoming" && (
+            <div className="jobs-period-banner">
+              Showing co-op and internship positions for Fall 2026 and beyond
+            </div>
+          )}
 
           <div className="jobs-list" ref={listRef}>
             {loading
