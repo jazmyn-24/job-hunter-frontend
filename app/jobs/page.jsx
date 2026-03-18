@@ -33,6 +33,25 @@ function scoreTier(score) {
   return "low";
 }
 
+function extractTerm(job) {
+  const combined = ((job.title || "") + " " + (job.description || "")).toLowerCase();
+  if (combined.includes("fall 2026"))   return "Fall 2026";
+  if (combined.includes("summer 2026")) return "Summer 2026";
+  if (combined.includes("winter 2026")) return "Winter 2026";
+  if (combined.includes("spring 2026")) return "Spring 2026";
+  if (combined.includes("january 2026")) return "Jan 2026";
+  if (combined.includes("may 2026"))    return "May 2026";
+  if (combined.includes("fall 2027"))   return "Fall 2027";
+  if (combined.includes("summer 2027")) return "Summer 2027";
+  if (combined.includes("2026"))        return "2026";
+  if (combined.includes("2027"))        return "2027";
+  const title = (job.title || "").toLowerCase();
+  if (title.includes("co-op") || title.includes("coop")) return "Co-op";
+  if (title.includes("intern"))   return "Internship";
+  if (title.includes("student"))  return "Student";
+  return "Co-op / Intern";
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DESCRIPTION FORMATTER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function FormattedDescription({ text }) {
@@ -88,9 +107,10 @@ function ShimmerCard() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function JobCard({ job, selected, onClick }) {
-  const tier = scoreTier(job.score);
-  const date = relativeDate(job.scraped_at || job.posted_at);
+  const tier   = scoreTier(job.score);
+  const date   = relativeDate(job.scraped_at || job.posted_at);
   const scored = hasScore(job.score);
+  const term   = extractTerm(job);
 
   return (
     <div
@@ -105,8 +125,8 @@ function JobCard({ job, selected, onClick }) {
         <div className="ind-card-salary">{job.salary}</div>
       )}
       <div className="ind-card-tags">
-        {job.source   && <span className="ind-tag">{job.source}</span>}
-        {job.job_type && <span className="ind-tag">{job.job_type}</span>}
+        <span className="ind-term-chip">{term}</span>
+        {job.job_type && <span className="ind-type-tag">{job.job_type}</span>}
         {scored ? (
           <span className={`ind-score-tag ${tier}`}>{Math.round(job.score)} match</span>
         ) : (
@@ -139,6 +159,7 @@ function JobDetail({ job, onBack }) {
   const scored  = hasScore(job.score);
   const tier    = scoreTier(job.score);
   const posted  = relativeDate(job.posted_at || job.scraped_at);
+  const term    = extractTerm(job);
 
   const hasLongDesc = job.description && job.description.length > 500;
   const [desc,        setDesc]        = useState(job.description || "");
@@ -188,13 +209,13 @@ function JobDetail({ job, onBack }) {
       )}
 
       <div className="ind-detail-meta">
-        {job.source   && <span className="ind-tag">{job.source}</span>}
-        {job.job_type && <span className="ind-tag">{job.job_type}</span>}
-        {posted       && <span className="ind-meta-date">{posted}</span>}
+        <span className="ind-term-chip">{term}</span>
+        {job.job_type && <><span className="ind-meta-sep">·</span><span className="ind-type-tag">{job.job_type}</span></>}
+        {posted && <><span className="ind-meta-sep">·</span><span className="ind-meta-date">{posted}</span></>}
         {scored ? (
-          <span className={`ind-score-pill ${tier}`}>{Math.round(job.score)} / 100</span>
+          <><span className="ind-meta-sep">·</span><span className={`ind-score-pill ${tier}`}>{Math.round(job.score)} / 100</span></>
         ) : (
-          <span className="ind-score-pill unscored">Not scored yet</span>
+          <><span className="ind-meta-sep">·</span><span className="ind-not-scored">Not scored yet</span></>
         )}
       </div>
 
