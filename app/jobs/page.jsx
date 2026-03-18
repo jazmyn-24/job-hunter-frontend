@@ -12,19 +12,22 @@ import "./jobs.css";
 function relativeDate(isoString) {
   if (!isoString) return null;
   const diff = Date.now() - new Date(isoString).getTime();
-  const mins  = Math.floor(diff / 60000);
-  const hours = Math.floor(mins / 60);
-  const days  = Math.floor(hours / 24);
+  const mins   = Math.floor(diff / 60000);
+  const hours  = Math.floor(mins / 60);
+  const days   = Math.floor(hours / 24);
   const months = Math.floor(days / 30);
-
   if (mins  < 60)  return "Just now";
   if (hours < 24)  return `${hours}h ago`;
   if (days  < 30)  return `${days}d ago`;
   return `${months} month${months !== 1 ? "s" : ""} ago`;
 }
 
+function hasScore(score) {
+  return score !== null && score !== undefined && score > 0;
+}
+
 function scoreTier(score) {
-  if (!score || score === 0) return "none";
+  if (!hasScore(score)) return "none";
   if (score >= 70) return "high";
   if (score >= 50) return "mid";
   return "low";
@@ -33,18 +36,21 @@ function scoreTier(score) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DESCRIPTION FORMATTER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function FormattedDescription({ text }) {
+  if (!text) return null;
   const lines = text.split("\n").filter(l => l.trim().length > 0);
   return (
     <div className="ind-desc-body">
       {lines.map((line, i) => {
         const trimmed = line.trim();
         const isHeader =
-          (trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed) && trimmed.length >= 4 && trimmed.length < 80) ||
+          (trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed) && trimmed.length > 3 && trimmed.length < 80) ||
           (trimmed.endsWith(":") && trimmed.length < 60 && !/^[•\-\*\d]/.test(trimmed));
         const isBullet = /^[•\-\*]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed);
 
         if (isHeader) {
-          return <p key={i} className="ind-desc-header">{trimmed}</p>;
+          return (
+            <h4 key={i} className="ind-desc-header">{trimmed}</h4>
+          );
         }
         if (isBullet) {
           const content = trimmed.replace(/^[•\-\*]\s*|^\d+[\.\)]\s*/, "");
@@ -65,10 +71,7 @@ function FormattedDescription({ text }) {
 
 function Shimmer({ width, height, style = {} }) {
   return (
-    <div
-      className="ind-shimmer"
-      style={{ width, height, borderRadius: 4, ...style }}
-    />
+    <div className="ind-shimmer" style={{ width, height, borderRadius: 4, ...style }} />
   );
 }
 
@@ -87,6 +90,7 @@ function ShimmerCard() {
 function JobCard({ job, selected, onClick }) {
   const tier = scoreTier(job.score);
   const date = relativeDate(job.scraped_at || job.posted_at);
+  const scored = hasScore(job.score);
 
   return (
     <div
@@ -97,13 +101,16 @@ function JobCard({ job, selected, onClick }) {
       <div className="ind-card-company">
         {[job.company, job.location].filter(Boolean).join(" · ")}
       </div>
+      {job.salary && (
+        <div className="ind-card-salary">{job.salary}</div>
+      )}
       <div className="ind-card-tags">
-        {job.source && <span className="ind-tag">{job.source}</span>}
+        {job.source   && <span className="ind-tag">{job.source}</span>}
         {job.job_type && <span className="ind-tag">{job.job_type}</span>}
-        {job.score > 0 && (
-          <span className={`ind-score-tag ${tier}`}>
-            {Math.round(job.score)} match
-          </span>
+        {scored ? (
+          <span className={`ind-score-tag ${tier}`}>{Math.round(job.score)} match</span>
+        ) : (
+          <span className="ind-score-tag unscored">--</span>
         )}
         {date && <span className="ind-card-date">{date}</span>}
       </div>
@@ -129,9 +136,9 @@ function EmptyState() {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB DETAIL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function JobDetail({ job, onBack }) {
-  const scored = job.score && job.score > 0;
-  const tier   = scoreTier(job.score);
-  const posted = relativeDate(job.posted_at || job.scraped_at);
+  const scored  = hasScore(job.score);
+  const tier    = scoreTier(job.score);
+  const posted  = relativeDate(job.posted_at || job.scraped_at);
 
   const hasLongDesc = job.description && job.description.length > 500;
   const [desc,        setDesc]        = useState(job.description || "");
@@ -166,33 +173,31 @@ function JobDetail({ job, onBack }) {
 
   return (
     <div className="ind-detail">
-      {/* Mobile back */}
       {onBack && (
-        <button className="ind-back-btn" onClick={onBack}>
-          ← Back to results
-        </button>
+        <button className="ind-back-btn" onClick={onBack}>← Back to results</button>
       )}
 
-      {/* Header */}
       <h1 className="ind-detail-title">{job.title}</h1>
       {(job.company || job.location) && (
         <p className="ind-detail-company">
           {[job.company, job.location].filter(Boolean).join(" · ")}
         </p>
       )}
+      {job.salary && (
+        <p className="ind-detail-salary">{job.salary}</p>
+      )}
 
       <div className="ind-detail-meta">
         {job.source   && <span className="ind-tag">{job.source}</span>}
         {job.job_type && <span className="ind-tag">{job.job_type}</span>}
         {posted       && <span className="ind-meta-date">{posted}</span>}
-        {scored && (
-          <span className={`ind-score-pill ${tier}`}>
-            {Math.round(job.score)} / 100
-          </span>
+        {scored ? (
+          <span className={`ind-score-pill ${tier}`}>{Math.round(job.score)} / 100</span>
+        ) : (
+          <span className="ind-score-pill unscored">Not scored yet</span>
         )}
       </div>
 
-      {/* Actions */}
       <div className="ind-actions">
         <button className="ind-btn-apply">Apply now</button>
         <a
@@ -207,7 +212,6 @@ function JobDetail({ job, onBack }) {
 
       <hr className="ind-divider" />
 
-      {/* Description */}
       <p className="ind-section-label">
         About the job
         {descCached && <span className="ind-cached-badge">· cached</span>}
@@ -270,6 +274,9 @@ export default function JobsPage() {
   const listRef   = useRef(null);
   const detailRef = useRef(null);
 
+  // Whether any loaded job has a real score (for enabling Best match chip)
+  const anyScored = jobs.some(j => hasScore(j.score));
+
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
     setReady(true);
@@ -291,7 +298,6 @@ export default function JobsPage() {
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
-
     function onScroll() {
       if (loadingMore) return;
       if (jobs.length >= total) return;
@@ -306,7 +312,6 @@ export default function JobsPage() {
         }).catch(() => setLoadingMore(false));
       }
     }
-
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, [jobs.length, total, loadingMore, offset, sort, period]);
@@ -315,6 +320,12 @@ export default function JobsPage() {
     setSelectedJob(job);
     setMobileView("detail");
     if (detailRef.current) detailRef.current.scrollTop = 0;
+  }
+
+  function handleSortChange(newSort) {
+    if (newSort === "score" && !anyScored) return;
+    if (newSort === sort) return;
+    setSort(newSort);
   }
 
   if (!ready) return null;
@@ -326,7 +337,6 @@ export default function JobsPage() {
       <div className="ind-main">
         {/* ── Left panel ── */}
         <div className={"ind-left" + (mobileView === "detail" ? " ind-hidden-mobile" : "")}>
-          {/* Topbar */}
           <div className="ind-topbar">
             <div className="ind-topbar-row">
               <span className="ind-topbar-title">Jobs</span>
@@ -339,13 +349,18 @@ export default function JobsPage() {
             <div className="ind-chip-row">
               <button
                 className={"ind-chip" + (sort === "newest" ? " active" : "")}
-                onClick={() => sort !== "newest" && setSort("newest")}
+                onClick={() => handleSortChange("newest")}
               >
                 Newest
               </button>
               <button
-                className={"ind-chip" + (sort === "score" ? " active" : "")}
-                onClick={() => sort !== "score" && setSort("score")}
+                className={
+                  "ind-chip" +
+                  (sort === "score" ? " active" : "") +
+                  (!anyScored ? " disabled" : "")
+                }
+                onClick={() => handleSortChange("score")}
+                title={!anyScored ? "Score jobs first to use this" : undefined}
               >
                 Best match
               </button>
@@ -371,7 +386,6 @@ export default function JobsPage() {
             </div>
           )}
 
-          {/* Job list */}
           <div className="ind-list" ref={listRef}>
             {loading
               ? Array.from({ length: 12 }, (_, i) => <ShimmerCard key={i} />)
@@ -396,12 +410,10 @@ export default function JobsPage() {
           ref={detailRef}
         >
           {selectedJob
-            ? (
-              <JobDetail
+            ? <JobDetail
                 job={selectedJob}
                 onBack={mobileView === "detail" ? () => setMobileView("list") : null}
               />
-            )
             : <EmptyState />
           }
         </div>

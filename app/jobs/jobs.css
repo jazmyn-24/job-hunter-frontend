@@ -103,6 +103,19 @@
   font-weight: 500;
 }
 
+.ind-chip.disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+  background: #f3f2ef;
+  border-color: #e4e2e0;
+}
+
+.ind-chip.disabled:hover {
+  background: #f3f2ef;
+  border-color: #e4e2e0;
+  color: #c0c4cc;
+}
+
 /* ── Period banner ── */
 
 .ind-period-banner {
@@ -176,6 +189,14 @@
   flex-wrap: wrap;
 }
 
+.ind-card-salary {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d2d2d;
+  margin-bottom: 6px;
+}
+
 .ind-card-date {
   font-family: "Inter", sans-serif;
   font-size: 11px;
@@ -204,10 +225,11 @@
   font-weight: 500;
 }
 
-.ind-score-tag.high { background: #e8f0fe; color: #1a0dab; }
-.ind-score-tag.mid  { background: #fef3c7; color: #92400e; }
-.ind-score-tag.low  { background: #f3f2ef; color: #767676; }
-.ind-score-tag.none { display: none; }
+.ind-score-tag.high     { background: #e8f0fe; color: #1a0dab; }
+.ind-score-tag.mid      { background: #fef3c7; color: #92400e; }
+.ind-score-tag.low      { background: #f3f2ef; color: #767676; }
+.ind-score-tag.none     { display: none; }
+.ind-score-tag.unscored { background: #f1f5f9; color: #9ca3af; }
 
 /* ── Load more ── */
 
@@ -293,6 +315,14 @@
   font-family: "Inter", sans-serif;
   font-size: 15px;
   color: #595959;
+  margin: 0 0 6px;
+}
+
+.ind-detail-salary {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d2d2d;
   margin: 0 0 12px;
 }
 
@@ -322,9 +352,10 @@
   border-radius: 20px;
 }
 
-.ind-score-pill.high { background: #e8f0fe; color: #1a0dab; }
-.ind-score-pill.mid  { background: #fef3c7; color: #92400e; }
-.ind-score-pill.low  { background: #f3f2ef; color: #767676; }
+.ind-score-pill.high     { background: #e8f0fe; color: #1a0dab; }
+.ind-score-pill.mid      { background: #fef3c7; color: #92400e; }
+.ind-score-pill.low      { background: #f3f2ef; color: #767676; }
+.ind-score-pill.unscored { background: #f1f5f9; color: #9ca3af; font-weight: 400; }
 
 /* ── Action buttons ── */
 
@@ -404,10 +435,12 @@
 }
 
 .ind-desc-header {
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #0d0d0d;
   margin: 18px 0 6px;
+  padding: 0;
 }
 
 .ind-desc-para {
