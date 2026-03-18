@@ -106,7 +106,7 @@ function JobDetail({ job }) {
   const postedDate = relativeDate(job.posted_at || job.scraped_at);
 
   return (
-    <div ref={detailRef}>
+    <div>
       {/* Header */}
       <div className="jobs-detail-header">
         <div className="jobs-detail-left">
@@ -281,7 +281,7 @@ export default function JobsPage() {
         {/* ── Right panel ── */}
         <div className="jobs-right" ref={detailRef}>
           {selectedJob
-            ? <JobDetail job={selectedJob} detailRef={detailRef} />
+            ? <JobDetail job={selectedJob} />
             : <EmptyState />
           }
         </div>
