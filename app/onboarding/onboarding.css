@@ -284,6 +284,19 @@
   margin-top: 6px;
 }
 
+.ob-role-group {
+  margin-bottom: 16px;
+}
+
+.ob-role-group-label {
+  font-family: "DM Mono", monospace;
+  font-size: 9px;
+  color: #9ca3af;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
 .ob-custom-role {
   display: flex;
   gap: 8px;

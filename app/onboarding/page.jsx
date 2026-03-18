@@ -84,8 +84,10 @@ const UNIVERSAL_SKILLS = {
   "Languages (spoken)": ["English","French","Mandarin","Hindi","Spanish","Arabic","Punjabi","Urdu","Portuguese","Japanese","Korean","German","Italian","Tagalog","Tamil","Bengali"],
 };
 
-function getSkillsForField(fieldId) {
-  if (!fieldId || fieldId === "other") {
+function getSkillsForField(fields) {
+  const arr = Array.isArray(fields) ? fields : (fields ? [fields] : []);
+  const nonOther = arr.filter(id => id !== "other");
+  if (arr.length === 0 || arr.every(id => id === "other")) {
     const all = {};
     Object.values(SKILLS).forEach(groups =>
       Object.entries(groups).forEach(([g, skills]) => {
@@ -94,7 +96,22 @@ function getSkillsForField(fieldId) {
     );
     return { ...all, ...UNIVERSAL_SKILLS };
   }
-  return { ...(SKILLS[fieldId] || {}), ...UNIVERSAL_SKILLS };
+  const merged = {};
+  nonOther.forEach(id => {
+    if (SKILLS[id]) {
+      Object.entries(SKILLS[id]).forEach(([g, skills]) => {
+        merged[g] = [...new Set([...(merged[g] || []), ...skills])];
+      });
+    }
+  });
+  if (arr.includes("other")) {
+    Object.values(SKILLS).forEach(groups =>
+      Object.entries(groups).forEach(([g, skills]) => {
+        merged[g] = [...new Set([...(merged[g] || []), ...skills])];
+      })
+    );
+  }
+  return { ...merged, ...UNIVERSAL_SKILLS };
 }
 
 const LOCATIONS   = ["Vancouver","Toronto","Calgary","Edmonton","Ottawa","Montreal","Waterloo","Remote (Canada)","Open to anything"];
@@ -131,12 +148,12 @@ function StepHeader({ label, headline, sub }) {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SKILLS SEARCH ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function SkillsSearch({ fieldId, selected, onChange }) {
+function SkillsSearch({ fields, selected, onChange }) {
   const [query, setQuery] = useState("");
   const [open, setOpen]   = useState(false);
   const wrapRef           = useRef(null);
 
-  const groups  = getSkillsForField(fieldId);
+  const groups  = getSkillsForField(fields);
   const allFlat = Object.values(groups).flat();
 
   const filtered = query.trim()
@@ -235,12 +252,15 @@ function Step1({ data, onChange }) {
 }
 
 function Step2({ data, onChange }) {
+  function toggle(id) {
+    onChange(data.fields.includes(id) ? data.fields.filter(f => f !== id) : [...data.fields, id]);
+  }
   return (
     <div>
-      <StepHeader label="STEP 2 — YOUR FIELD" headline="What's your field of study?" sub="This helps us show you the most relevant roles and tailor your job search." />
+      <StepHeader label="STEP 2 — TARGET AREAS" headline="What areas are you looking to work in?" sub="Select all that apply — you can target multiple areas." />
       <div className="ob-field-grid">
         {FIELDS.map(f => (
-          <button key={f.id} type="button" className={"ob-field-card" + (data.field === f.id ? " selected" : "")} onClick={() => onChange(f.id)}>
+          <button key={f.id} type="button" className={"ob-field-card" + (data.fields.includes(f.id) ? " selected" : "")} onClick={() => toggle(f.id)}>
             <span className="ob-field-dot" style={{ background: f.color }} />
             <span className="ob-field-text">
               <span className="ob-field-name">{f.name}</span>
@@ -249,13 +269,32 @@ function Step2({ data, onChange }) {
           </button>
         ))}
       </div>
+      <div className="ob-count">{data.fields.length} {data.fields.length === 1 ? "area" : "areas"} selected</div>
     </div>
   );
 }
 
-function Step3({ data, onChange, field }) {
+function Step3({ data, onChange }) {
   const [custom, setCustom] = useState("");
-  const roles = ROLES[field] || ROLES.other;
+  const fields = data.fields.length > 0 ? data.fields : ["other"];
+  const hasOther = fields.includes("other");
+
+  // Build grouped roles: [{fieldId, fieldName, roles[]}]
+  const groups = fields
+    .filter(id => id !== "other")
+    .map(id => {
+      const f = FIELDS.find(f => f.id === id);
+      return { id, name: f ? f.name : id, roles: ROLES[id] || [] };
+    });
+
+  // "other" = all roles not already shown
+  const shownRoles = new Set(groups.flatMap(g => g.roles));
+  const otherRoles = ROLES.other.filter(r => !shownRoles.has(r));
+  if (hasOther && fields.length === 1) {
+    groups.push({ id: "other", name: "Other", roles: ROLES.other });
+  } else if (hasOther && otherRoles.length > 0) {
+    groups.push({ id: "other", name: "Other", roles: otherRoles });
+  }
 
   function toggle(r) {
     onChange(data.roles.includes(r) ? data.roles.filter(x => x !== r) : [...data.roles, r]);
@@ -269,10 +308,15 @@ function Step3({ data, onChange, field }) {
   return (
     <div>
       <StepHeader label="STEP 3 — TARGET ROLES" headline="What roles are you targeting?" sub="Select all that apply." />
-      <div className="ob-chips-wrap">
-        {roles.map(r => <Chip key={r} label={r} selected={data.roles.includes(r)} onClick={() => toggle(r)} />)}
-      </div>
-      {field === "other" && (
+      {groups.map(g => (
+        <div key={g.id} className="ob-role-group">
+          {fields.length > 1 && <div className="ob-role-group-label">{g.name.toUpperCase()}</div>}
+          <div className="ob-chips-wrap">
+            {g.roles.map(r => <Chip key={r} label={r} selected={data.roles.includes(r)} onClick={() => toggle(r)} />)}
+          </div>
+        </div>
+      ))}
+      {hasOther && (
         <div className="ob-custom-role">
           <input className="ob-input" placeholder="Add a custom role..." value={custom} onChange={e => setCustom(e.target.value)} onKeyDown={e => e.key === "Enter" && addCustom()} />
           <button type="button" className="ob-add-btn" onClick={addCustom}>Add</button>
@@ -283,11 +327,11 @@ function Step3({ data, onChange, field }) {
   );
 }
 
-function Step4({ data, onChange, field }) {
+function Step4({ data, onChange }) {
   return (
     <div>
       <StepHeader label="STEP 4 — SKILLS" headline="What are your key skills?" sub="Search and add skills — technical and non-technical." />
-      <SkillsSearch fieldId={field} selected={data.skills} onChange={onChange} />
+      <SkillsSearch fields={data.fields} selected={data.skills} onChange={onChange} />
     </div>
   );
 }
@@ -502,7 +546,7 @@ export default function OnboardingPage() {
 
   const [form, setForm] = useState({
     name:           "",
-    field:          null,
+    fields:         [],
     roles:          [],
     skills:         [],
     cvFiles:        [],
@@ -520,8 +564,8 @@ export default function OnboardingPage() {
   }
 
   function validate() {
-    if (step === 1 && !form.name.trim())         return "Please enter your name to continue";
-    if (step === 2 && !form.field)               return "Please select a field to continue";
+    if (step === 1 && !form.name.trim())             return "Please enter your name to continue";
+    if (step === 2 && form.fields.length === 0)      return "Please select at least one area to continue";
     if (step === 3 && form.roles.length === 0)   return "Please select at least one role";
     if (step === 4 && form.skills.length === 0)  return "Please add at least one skill";
     if (step === 5 && form.cvFiles.length === 0) return "Please upload at least one CV";
@@ -558,9 +602,9 @@ export default function OnboardingPage() {
 
   const steps = [
     <Step1  key={1}  data={form} onChange={v => update("name", v)} />,
-    <Step2  key={2}  data={form} onChange={v => update("field", v)} />,
-    <Step3  key={3}  data={form} onChange={v => update("roles", v)}  field={form.field} />,
-    <Step4  key={4}  data={form} onChange={v => update("skills", v)} field={form.field} />,
+    <Step2  key={2}  data={form} onChange={v => update("fields", v)} />,
+    <Step3  key={3}  data={form} onChange={v => update("roles", v)} />,
+    <Step4  key={4}  data={form} onChange={v => update("skills", v)} />,
     <Step5  key={5}  data={form} onChange={v => update("cvFiles", v)} />,
     <Step6  key={6}  data={form} onChange={v => update("locations", v)} />,
     <Step7  key={7}  data={form} onChange={v => update("profiles", v)} />,
