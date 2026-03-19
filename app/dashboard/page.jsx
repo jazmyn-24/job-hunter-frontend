@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isOnboarded, getOrCreateSessionId } from "../../lib/session";
+import { isOnboarded, getOrCreateSessionId, getSession } from "../../lib/session";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 import { getStats, getPipelineStatus, getScoreQueue, triggerPipeline, runScorer, getScorerStatus } from "../../lib/api";
 import Sidebar from "../../components/Sidebar";
 import "./dashboard.css";
@@ -42,6 +44,16 @@ function IconStar() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  );
+}
+
+function IconSync() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10"/>
+      <polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
     </svg>
   );
 }
@@ -110,7 +122,7 @@ function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highl
 const STEP_KEYS   = ["scrape", "score", "tailor", "apply", "notify"];
 const STEP_LABELS = { scrape: "Scrape", score: "Score", tailor: "Tailor", apply: "Apply", notify: "Notify" };
 
-function PipelineBanner({ pipeline, loading, onRun, running, onScore, scoring, scorerResult }) {
+function PipelineBanner({ pipeline, loading, onRun, running, onScore, scoring, scorerResult, onSync, syncing }) {
   const steps   = pipeline?.steps ?? {};
   const lastRun = formatLastRun(pipeline?.last_run);
 
@@ -144,6 +156,11 @@ function PipelineBanner({ pipeline, loading, onRun, running, onScore, scoring, s
         <button className="db-run-btn" onClick={onScore} disabled={scoring || loading}
           style={{ background: scoring ? "#9ca3af" : "#059669" }}>
           {scoring ? "Scoring…" : "Score jobs"}
+        </button>
+        <button className="db-run-btn" onClick={onSync} disabled={syncing || loading}
+          style={{ background: syncing ? "#9ca3af" : "#6b7280", display: "flex", alignItems: "center", gap: 5 }}>
+          <IconSync />
+          {syncing ? "Syncing…" : "Sync profile"}
         </button>
         <button className="db-run-btn" onClick={onRun} disabled={running || loading}>
           {running ? "Running…" : "Run now"}
@@ -221,6 +238,7 @@ export default function DashboardPage() {
   const [running,      setRunning]      = useState(false);
   const [scoring,      setScoring]      = useState(false);
   const [scorerResult, setScorerResult] = useState(null);
+  const [syncing,      setSyncing]      = useState(false);
 
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
@@ -267,6 +285,31 @@ export default function DashboardPage() {
       setScorerResult({ scored: 0, failed: 0, error: true });
     }
     setScoring(false);
+  }
+
+  async function handleSyncProfile() {
+    const session = getSession();
+    const sessionId = getOrCreateSessionId();
+    if (!session?.onboardingData) {
+      alert("No onboarding data found — please complete onboarding first");
+      return;
+    }
+    setSyncing(true);
+    try {
+      const res = await fetch(`${API_URL}/api/profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, ...session.onboardingData }),
+      });
+      if (res.ok) {
+        alert("Profile synced to backend successfully!");
+      } else {
+        alert("Sync failed — is the backend running?");
+      }
+    } catch (_) {
+      alert("Sync failed — is the backend running?");
+    }
+    setSyncing(false);
   }
 
   if (!ready) return null;
@@ -333,7 +376,8 @@ export default function DashboardPage() {
 
         {/* Pipeline */}
         <PipelineBanner pipeline={pipeline} loading={loading} onRun={handleRunNow} running={running}
-          onScore={handleRunScorer} scoring={scoring} scorerResult={scorerResult} />
+          onScore={handleRunScorer} scoring={scoring} scorerResult={scorerResult}
+          onSync={handleSyncProfile} syncing={syncing} />
 
         {/* Error banner */}
         {error && (
