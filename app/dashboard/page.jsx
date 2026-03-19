@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isOnboarded } from "../../lib/session";
-import { getStats, getPipelineStatus, getScoreQueue, triggerPipeline } from "../../lib/api";
+import { isOnboarded, getOrCreateSessionId } from "../../lib/session";
+import { getStats, getPipelineStatus, getScoreQueue, triggerPipeline, runScorer, getScorerStatus } from "../../lib/api";
 import Sidebar from "../../components/Sidebar";
 import "./dashboard.css";
 
@@ -110,7 +110,7 @@ function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highl
 const STEP_KEYS   = ["scrape", "score", "tailor", "apply", "notify"];
 const STEP_LABELS = { scrape: "Scrape", score: "Score", tailor: "Tailor", apply: "Apply", notify: "Notify" };
 
-function PipelineBanner({ pipeline, loading, onRun, running }) {
+function PipelineBanner({ pipeline, loading, onRun, running, onScore, scoring, scorerResult }) {
   const steps   = pipeline?.steps ?? {};
   const lastRun = formatLastRun(pipeline?.last_run);
 
@@ -121,6 +121,11 @@ function PipelineBanner({ pipeline, loading, onRun, running }) {
         <div className="db-pipeline-sub">
           Last run: <span className="db-mono">{loading ? "—" : lastRun}</span>
         </div>
+        {scorerResult && (
+          <div className="db-pipeline-sub" style={{ marginTop: 2, color: "#059669" }}>
+            Scored: {scorerResult.scored} jobs · {scorerResult.failed} failed
+          </div>
+        )}
       </div>
       <div className="db-pipeline-steps">
         {STEP_KEYS.map((key, i) => {
@@ -135,9 +140,15 @@ function PipelineBanner({ pipeline, loading, onRun, running }) {
           );
         })}
       </div>
-      <button className="db-run-btn" onClick={onRun} disabled={running || loading}>
-        {running ? "Running…" : "Run now"}
-      </button>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button className="db-run-btn" onClick={onScore} disabled={scoring || loading}
+          style={{ background: scoring ? "#9ca3af" : "#059669" }}>
+          {scoring ? "Scoring…" : "Score jobs"}
+        </button>
+        <button className="db-run-btn" onClick={onRun} disabled={running || loading}>
+          {running ? "Running…" : "Run now"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -202,12 +213,14 @@ export default function DashboardPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
-  const [stats,    setStats]    = useState(null);
-  const [pipeline, setPipeline] = useState(null);
-  const [queue,    setQueue]    = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [error,    setError]    = useState(false);
-  const [running,  setRunning]  = useState(false);
+  const [stats,        setStats]        = useState(null);
+  const [pipeline,     setPipeline]     = useState(null);
+  const [queue,        setQueue]        = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(false);
+  const [running,      setRunning]      = useState(false);
+  const [scoring,      setScoring]      = useState(false);
+  const [scorerResult, setScorerResult] = useState(null);
 
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
@@ -238,6 +251,22 @@ export default function DashboardPage() {
       } catch (_) {}
       setRunning(false);
     }, 2000);
+  }
+
+  async function handleRunScorer() {
+    const sessionId = getOrCreateSessionId();
+    if (!sessionId) return;
+    setScoring(true);
+    setScorerResult(null);
+    try {
+      const result = await runScorer(sessionId);
+      setScorerResult(result);
+      const [s, q] = await Promise.all([getStats(), getScoreQueue(3)]);
+      setStats(s); setQueue(q);
+    } catch (_) {
+      setScorerResult({ scored: 0, failed: 0, error: true });
+    }
+    setScoring(false);
   }
 
   if (!ready) return null;
@@ -303,7 +332,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Pipeline */}
-        <PipelineBanner pipeline={pipeline} loading={loading} onRun={handleRunNow} running={running} />
+        <PipelineBanner pipeline={pipeline} loading={loading} onRun={handleRunNow} running={running}
+          onScore={handleRunScorer} scoring={scoring} scorerResult={scorerResult} />
 
         {/* Error banner */}
         {error && (

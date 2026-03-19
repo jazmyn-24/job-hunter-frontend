@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "./onboarding.css";
-import { saveSession, getSession, isOnboarded } from "../../lib/session";
+import { saveSession, getSession, isOnboarded, getOrCreateSessionId } from "../../lib/session";
+import { saveProfile } from "../../lib/api";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ DATA ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -607,6 +608,7 @@ export default function OnboardingPage() {
     }
     if (step === 10) {
       const { cvFiles, ...serializable } = form;
+      const sessionId = getOrCreateSessionId();
       saveSession({
         ...getSession(),
         onboardingComplete: true,
@@ -614,6 +616,21 @@ export default function OnboardingPage() {
         name: form.name,
         onboardingData: serializable,
       });
+      // Save to backend — fire and forget, onboarding completes regardless
+      saveProfile(sessionId, {
+        name: form.name,
+        selected_areas: form.fields,
+        selected_roles: form.roles,
+        selected_skills: form.skills,
+        selected_locations: form.locations,
+        linkedin_url: form.profiles.linkedin || null,
+        github_url: form.profiles.github || null,
+        portfolio_url: form.profiles.portfolio || null,
+        start_dates: form.startDates,
+        durations: form.durations,
+        automation_mode: form.automationMode,
+        notifications: form.notifications,
+      }).catch(() => {});
       setDone(true);
       setTimeout(() => router.push("/dashboard"), 2500);
       return;
