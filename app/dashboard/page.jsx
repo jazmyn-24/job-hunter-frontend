@@ -133,9 +133,14 @@ function PipelineBanner({ pipeline, loading, onRun, running, onScore, scoring, s
         <div className="db-pipeline-sub">
           Last run: <span className="db-mono">{loading ? "—" : lastRun}</span>
         </div>
-        {scorerResult && (
+        {scorerResult && !scorerResult.error && (
           <div className="db-pipeline-sub" style={{ marginTop: 2, color: "#059669" }}>
             Scored: {scorerResult.scored} jobs · {scorerResult.failed} failed
+          </div>
+        )}
+        {scorerResult?.error && (
+          <div className="db-pipeline-sub" style={{ marginTop: 2, color: "#dc2626", fontSize: 12 }}>
+            Scorer error: {scorerResult.error}
           </div>
         )}
       </div>
@@ -279,10 +284,12 @@ export default function DashboardPage() {
     try {
       const result = await runScorer(sessionId);
       setScorerResult(result);
-      const [s, q] = await Promise.all([getStats(), getScoreQueue(70, 3)]);
-      setStats(s); setQueue(q.jobs ?? q);
-    } catch (_) {
-      setScorerResult({ scored: 0, failed: 0, error: true });
+      if (!result.error) {
+        const [s, q] = await Promise.all([getStats(), getScoreQueue(70, 3)]);
+        setStats(s); setQueue(q.jobs ?? q);
+      }
+    } catch (e) {
+      setScorerResult({ scored: 0, failed: 0, error: e.message || "Request failed" });
     }
     setScoring(false);
   }
