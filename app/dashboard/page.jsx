@@ -226,11 +226,11 @@ export default function DashboardPage() {
     if (!isOnboarded()) { router.replace("/auth"); return; }
     setReady(true);
 
-    Promise.all([getStats(), getPipelineStatus(), getScoreQueue(3)])
+    Promise.all([getStats(), getPipelineStatus(), getScoreQueue(70, 3)])
       .then(([s, p, q]) => {
         setStats(s);
         setPipeline(p);
-        setQueue(q);
+        setQueue(q.jobs ?? q);
         setLoading(false);
       })
       .catch(() => {
@@ -246,8 +246,8 @@ export default function DashboardPage() {
     try { await triggerPipeline(); } catch (_) {}
     setTimeout(async () => {
       try {
-        const [s, p, q] = await Promise.all([getStats(), getPipelineStatus(), getScoreQueue(3)]);
-        setStats(s); setPipeline(p); setQueue(q);
+        const [s, p, q] = await Promise.all([getStats(), getPipelineStatus(), getScoreQueue(70, 3)]);
+        setStats(s); setPipeline(p); setQueue(q.jobs ?? q);
       } catch (_) {}
       setRunning(false);
     }, 2000);
@@ -261,8 +261,8 @@ export default function DashboardPage() {
     try {
       const result = await runScorer(sessionId);
       setScorerResult(result);
-      const [s, q] = await Promise.all([getStats(), getScoreQueue(3)]);
-      setStats(s); setQueue(q);
+      const [s, q] = await Promise.all([getStats(), getScoreQueue(70, 3)]);
+      setStats(s); setQueue(q.jobs ?? q);
     } catch (_) {
       setScorerResult({ scored: 0, failed: 0, error: true });
     }
@@ -275,7 +275,7 @@ export default function DashboardPage() {
 
   return (
     <div className="db-shell">
-      <Sidebar activePage="dashboard" />
+      <Sidebar activePage="dashboard" counts={{ scoreQueue: stats?.score_queue }} />
 
       <main className="db-main">
         {/* Header */}

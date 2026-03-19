@@ -76,7 +76,7 @@ const NAV_ITEMS = [
   { label: "Settings",     icon: <IconGear />,        href: "/settings" },
 ];
 
-export default function Sidebar({ activePage }) {
+export default function Sidebar({ activePage, counts = {} }) {
   const router = useRouter();
   const session = getSession();
   const name  = session?.name  || "";
@@ -108,16 +108,22 @@ export default function Sidebar({ activePage }) {
           Agent active
         </div>
         <nav className="db-nav">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={"db-nav-item" + (activePage === item.label.toLowerCase() ? " active" : "")}
-            >
-              <span className="db-nav-icon">{item.icon}</span>
-              <span className="db-nav-label">{item.label}</span>
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const badge = item.label === "Score queue" ? counts.scoreQueue : null;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={"db-nav-item" + (activePage === item.label.toLowerCase() ? " active" : "")}
+              >
+                <span className="db-nav-icon">{item.icon}</span>
+                <span className="db-nav-label">{item.label}</span>
+                {badge > 0 && (
+                  <span className="db-nav-badge">{badge > 99 ? "99+" : badge}</span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
