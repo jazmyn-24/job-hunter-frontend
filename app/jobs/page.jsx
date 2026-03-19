@@ -286,10 +286,11 @@ function JobDetail({ job, onBack }) {
 const PAGE_SIZE = 50;
 
 const TYPE_LABELS = {
-  all:     "Co-op & Internship",
-  coop:    "Co-op",
-  intern:  "Internship",
-  student: "Student",
+  all:       "Co-op & Internship",
+  coop:      "Co-op",
+  intern:    "Internship",
+  student:   "Student",
+  all_types: "All types",
 };
 
 const TERM_LABELS = {
@@ -422,6 +423,7 @@ export default function JobsPage() {
                   <option value="coop">Co-op only</option>
                   <option value="intern">Internship only</option>
                   <option value="student">Student positions</option>
+                  <option value="all_types">All types</option>
                 </select>
               </div>
             </div>
