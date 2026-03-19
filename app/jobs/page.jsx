@@ -285,10 +285,19 @@ function JobDetail({ job, onBack }) {
 
 const PAGE_SIZE = 50;
 
-const PERIOD_LABELS = {
-  fall2026: "Fall 2026+",
-  all:      "All jobs",
-  "2027":   "2027+",
+const TYPE_LABELS = {
+  all:     "Co-op & Internship",
+  coop:    "Co-op",
+  intern:  "Internship",
+  student: "Student",
+};
+
+const TERM_LABELS = {
+  fall2026:    "Fall 2026+",
+  summer2026:  "Summer 2026",
+  all_upcoming:"All upcoming",
+  "2027":      "2027 only",
+  all:         "All",
 };
 
 export default function JobsPage() {
@@ -299,7 +308,8 @@ export default function JobsPage() {
   const [total,       setTotal]       = useState(0);
   const [selectedJob, setSelectedJob] = useState(null);
   const [sort,        setSort]        = useState("newest");
-  const [period,      setPeriod]      = useState("fall2026");
+  const [term,        setTerm]        = useState("fall2026");
+  const [jobType,     setJobType]     = useState("all");
   const [loading,     setLoading]     = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [offset,      setOffset]      = useState(0);
@@ -307,9 +317,6 @@ export default function JobsPage() {
 
   const listRef   = useRef(null);
   const detailRef = useRef(null);
-
-  // Whether any loaded job has a real score (for enabling Best match chip)
-  const anyScored = jobs.some(j => hasScore(j.score));
 
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
@@ -320,13 +327,13 @@ export default function JobsPage() {
     if (!ready) return;
     setLoading(true);
     setOffset(0);
-    getJobs(sort, PAGE_SIZE, 0, period).then(({ total: t, jobs: j }) => {
+    getJobs(sort, PAGE_SIZE, 0, term, jobType).then(({ total: t, jobs: j }) => {
       setTotal(t);
       setJobs(j);
       setSelectedJob(j[0] ?? null);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [ready, sort, period]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ready, sort, term, jobType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Infinite scroll
   useEffect(() => {
@@ -340,7 +347,7 @@ export default function JobsPage() {
         const nextOffset = offset + PAGE_SIZE;
         setLoadingMore(true);
         setOffset(nextOffset);
-        getJobs(sort, PAGE_SIZE, nextOffset, period).then(({ jobs: more }) => {
+        getJobs(sort, PAGE_SIZE, nextOffset, term, jobType).then(({ jobs: more }) => {
           setJobs(prev => [...prev, ...more]);
           setLoadingMore(false);
         }).catch(() => setLoadingMore(false));
@@ -348,18 +355,12 @@ export default function JobsPage() {
     }
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
-  }, [jobs.length, total, loadingMore, offset, sort, period]);
+  }, [jobs.length, total, loadingMore, offset, sort, term, jobType]);
 
   function handleJobClick(job) {
     setSelectedJob(job);
     setMobileView("detail");
     if (detailRef.current) detailRef.current.scrollTop = 0;
-  }
-
-  function handleSortChange(newSort) {
-    if (newSort === "score" && !anyScored) return;
-    if (newSort === sort) return;
-    setSort(newSort);
   }
 
   if (!ready) return null;
@@ -375,49 +376,61 @@ export default function JobsPage() {
             <div className="ind-topbar-row">
               <span className="ind-topbar-title">Jobs</span>
               <span className="ind-count-badge">
-                {total.toLocaleString()} {period === "all" ? "total" : "matching"}
+                {total.toLocaleString()} matching
               </span>
             </div>
 
-            {/* Sort chips */}
-            <div className="ind-chip-row">
-              <button
-                className={"ind-chip" + (sort === "newest" ? " active" : "")}
-                onClick={() => handleSortChange("newest")}
-              >
-                Newest
-              </button>
-              <button
-                className={
-                  "ind-chip" +
-                  (sort === "score" ? " active" : "") +
-                  (!anyScored ? " disabled" : "")
-                }
-                onClick={() => handleSortChange("score")}
-                title={!anyScored ? "Score jobs first to use this" : undefined}
-              >
-                Best match
-              </button>
-            </div>
-
-            {/* Period chips */}
-            <div className="ind-chip-row">
-              {Object.entries(PERIOD_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  className={"ind-chip" + (period === key ? " active" : "")}
-                  onClick={() => period !== key && setPeriod(key)}
+            {/* Filter dropdowns */}
+            <div className="ind-filter-row">
+              <div className="ind-filter-group">
+                <label className="ind-filter-label">Sort by</label>
+                <select
+                  className="ind-filter-select"
+                  value={sort}
+                  onChange={e => setSort(e.target.value)}
                 >
-                  {label}
-                </button>
-              ))}
+                  <option value="newest">Most recent</option>
+                  <option value="score">Highest score</option>
+                  <option value="company_asc">Company A–Z</option>
+                  <option value="company_desc">Company Z–A</option>
+                </select>
+              </div>
+
+              <div className="ind-filter-group">
+                <label className="ind-filter-label">Term</label>
+                <select
+                  className="ind-filter-select"
+                  value={term}
+                  onChange={e => setTerm(e.target.value)}
+                >
+                  <option value="fall2026">Fall 2026+</option>
+                  <option value="summer2026">Summer 2026</option>
+                  <option value="all_upcoming">All upcoming (2026 & 2027)</option>
+                  <option value="2027">2027 only</option>
+                  <option value="all">All jobs (no filter)</option>
+                </select>
+              </div>
+
+              <div className="ind-filter-group">
+                <label className="ind-filter-label">Type</label>
+                <select
+                  className="ind-filter-select"
+                  value={jobType}
+                  onChange={e => setJobType(e.target.value)}
+                >
+                  <option value="all">Co-op & Internship</option>
+                  <option value="coop">Co-op only</option>
+                  <option value="intern">Internship only</option>
+                  <option value="student">Student positions</option>
+                </select>
+              </div>
             </div>
           </div>
 
           <div className="ind-period-banner">
-            Showing co-op and internship positions only
-            {period === "fall2026" && " · Fall 2026 and beyond"}
-            {" "}· {loading ? "…" : total.toLocaleString()} matching
+            Showing <strong>{TYPE_LABELS[jobType]}</strong> positions
+            {" · "}{TERM_LABELS[term]}
+            {" · "}{loading ? "…" : total.toLocaleString()} results
           </div>
 
           <div className="ind-list" ref={listRef}>

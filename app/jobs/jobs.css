@@ -43,7 +43,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .ind-topbar-title {
@@ -64,53 +64,50 @@
   padding: 2px 8px;
 }
 
-/* ── Chip rows ── */
+/* ── Filter row (dropdowns) ── */
 
-.ind-chip-row {
+.ind-filter-row {
   display: flex;
-  gap: 6px;
+  gap: 16px;
+  align-items: flex-end;
+  padding: 12px 0 2px;
   flex-wrap: wrap;
-  margin-bottom: 6px;
 }
 
-.ind-chip-row:last-child {
-  margin-bottom: 0;
+.ind-filter-group {
+  display: flex;
+  flex-direction: column;
 }
 
-.ind-chip {
+.ind-filter-label {
   font-family: "Inter", sans-serif;
   font-size: 12px;
   color: #595959;
+  margin-bottom: 4px;
+}
+
+.ind-filter-select {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #2d2d2d;
   background: #ffffff;
   border: 1px solid #e4e2e0;
-  border-radius: 20px;
-  padding: 5px 14px;
+  border-radius: 4px;
+  padding: 7px 30px 7px 10px;
   cursor: pointer;
-  transition: all 0.1s;
-  white-space: nowrap;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  min-width: 150px;
+  outline: none;
+  transition: border-color 0.1s;
 }
 
-.ind-chip:hover {
+.ind-filter-select:focus,
+.ind-filter-select:hover {
   border-color: #2557a7;
-  color: #2557a7;
-}
-
-.ind-chip.active {
-  background: #ffffff;
-  border-color: #2557a7;
-  color: #2557a7;
-  font-weight: 600;
-}
-
-.ind-chip.disabled {
-  color: #c0c4cc;
-  cursor: not-allowed;
-  border-color: #e4e2e0;
-}
-
-.ind-chip.disabled:hover {
-  border-color: #e4e2e0;
-  color: #c0c4cc;
 }
 
 /* ── Period banner ── */
