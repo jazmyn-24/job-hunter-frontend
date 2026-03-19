@@ -201,12 +201,7 @@ export default function CVPage() {
     try {
       for (let i = 0; i < pending.length; i++) {
         const { file, tag } = pending[i];
-        await addCV(sessionId, {
-          filename: file.name,
-          tag,
-          is_default: isFirst && i === 0,
-          file_size: `${(file.size / 1024).toFixed(0)}KB`,
-        });
+        await addCV(sessionId, file, tag, isFirst && i === 0);
       }
       setPending([]);
       await load();
