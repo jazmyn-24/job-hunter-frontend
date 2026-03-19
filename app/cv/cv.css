@@ -1,0 +1,355 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHELL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f9fb;
+}
+
+.cv-main {
+  margin-left: 220px;
+  flex: 1;
+  padding: 36px 40px 60px;
+  max-width: 780px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ HEADER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-page-title {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #0a0a0a;
+  line-height: 1.2;
+}
+
+.cv-page-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #595959;
+  margin-top: 4px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SECTION ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-section {
+  margin-top: 32px;
+}
+
+.cv-section-title {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  margin-bottom: 14px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ UPLOAD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-upload-area {
+  border: 1.5px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: #ffffff;
+  text-align: center;
+}
+
+.cv-upload-area:hover,
+.cv-upload-area.drag-over {
+  border-color: #4361ee;
+  background: #f5f7ff;
+}
+
+.cv-upload-label {
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+}
+
+.cv-upload-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Pending uploads (not yet saved) */
+
+.cv-pending-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cv-pending-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.cv-pending-name {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #374151;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cv-pending-size {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.cv-tag-input {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 5px 10px;
+  width: 130px;
+  color: #374151;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cv-tag-input:focus {
+  border-color: #4361ee;
+}
+
+.cv-pending-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.cv-pending-remove:hover {
+  color: #ef4444;
+}
+
+.cv-save-btn {
+  margin-top: 14px;
+  background: #4361ee;
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 7px;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cv-save-btn:hover {
+  background: #3451db;
+}
+
+.cv-save-btn:disabled {
+  background: #a5b4fc;
+  cursor: default;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ CV LIST ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cv-row {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.15s;
+}
+
+.cv-row:hover {
+  border-color: #c7d2fe;
+}
+
+.cv-row.is-default {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.cv-doc-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.cv-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cv-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cv-filename {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+
+.cv-tag-badge {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #4361ee;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 20px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.cv-default-badge {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.cv-row-meta {
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 3px;
+}
+
+.cv-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cv-default-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #6b7280;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cv-default-toggle input[type="checkbox"] {
+  accent-color: #15803d;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.cv-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 5px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.cv-delete-btn:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.cv-empty {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 32px 0;
+  background: #ffffff;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ HOW IT WORKS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-info-card {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.cv-info-title {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.cv-info-body {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ LOADING / ERROR ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.cv-loading {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 20px 0;
+}
+
+.cv-error {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 8px;
+}
