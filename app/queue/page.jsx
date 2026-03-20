@@ -27,6 +27,18 @@ const FILTER_OPTIONS = [
 
 const PAGE_SIZE = 20;
 
+/* Derive a human-readable term chip from title + job_type */
+function termChip(job) {
+  const t = (job.title || "").toLowerCase();
+  if (t.includes("co-op") || t.includes("coop") || t.includes("co op")) return "Co-op";
+  if (t.includes("intern")) return "Internship";
+  if (t.includes("student")) return "Student";
+  // Fall back to job_type but normalize "Full-time" on co-op roles
+  const jt = (job.job_type || "").toLowerCase();
+  if (jt.includes("co") || jt.includes("intern")) return job.job_type;
+  return "Co-op / Intern";
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function JobCard({ job, onSkip, skipped }) {
@@ -47,12 +59,7 @@ function JobCard({ job, onSkip, skipped }) {
           {job.company && <span>{job.company}</span>}
           {job.company && job.location && <span className="queue-dot">·</span>}
           {job.location && <span>{job.location}</span>}
-          {job.job_type && (
-            <span className="queue-type-badge">{job.job_type}</span>
-          )}
-          {job.source && (
-            <span className="queue-source-badge">{job.source}</span>
-          )}
+          <span className="queue-type-badge">{termChip(job)}</span>
         </div>
 
         {job.score_rationale && (

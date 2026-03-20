@@ -16,15 +16,17 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ HEADER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .queue-page-title {
-  font-size: 22px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 26px;
   font-weight: 600;
   color: #111827;
   margin: 0 0 4px;
 }
 
 .queue-page-sub {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
-  color: #6b7280;
+  color: #595959;
   margin: 0 0 28px;
 }
 
@@ -38,12 +40,14 @@
 }
 
 .queue-filter-label {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   color: #374151;
   font-weight: 500;
 }
 
 .queue-filter-select {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   padding: 7px 12px;
   border: 1px solid #d1d5db;
@@ -61,8 +65,9 @@
 
 .queue-count {
   margin-left: auto;
+  font-family: "Inter", sans-serif;
   font-size: 12px;
-  color: #9ca3af;
+  color: #595959;
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ CARDS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -99,7 +104,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "DM Mono", monospace;
+  font-family: "Bricolage Grotesque", sans-serif;
   font-size: 15px;
   font-weight: 600;
   line-height: 1;
@@ -126,15 +131,17 @@
 }
 
 .queue-job-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111827;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #0d0d0d;
   line-height: 1.3;
 }
 
 .queue-card-meta {
-  font-size: 12px;
-  color: #6b7280;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #595959;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -146,21 +153,12 @@
   color: #d1d5db;
 }
 
-.queue-source-badge {
-  font-size: 10px;
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-family: "DM Mono", monospace;
-  margin-left: 4px;
-}
-
 .queue-type-badge {
-  font-size: 10px;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
   background: #eef2ff;
   color: #4361ee;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 10px;
   margin-left: 4px;
 }
@@ -168,9 +166,10 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RATIONALE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .queue-rationale {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
-  color: #374151;
-  line-height: 1.5;
+  color: #6b7280;
+  line-height: 1.6;
   margin-bottom: 10px;
 }
 
@@ -184,6 +183,7 @@
 }
 
 .skill-matched {
+  font-family: "Inter", sans-serif;
   font-size: 11px;
   background: #f0fdf4;
   color: #15803d;
@@ -193,6 +193,7 @@
 }
 
 .skill-missing {
+  font-family: "Inter", sans-serif;
   font-size: 11px;
   background: #fff7ed;
   color: #c2410c;
@@ -204,7 +205,8 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RED FLAGS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .queue-red-flags {
-  font-size: 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
   color: #991b1b;
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -226,6 +228,7 @@
 }
 
 .queue-apply-btn {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 7px 16px;
@@ -246,7 +249,9 @@
 }
 
 .queue-skip-btn {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
+  font-weight: 500;
   padding: 7px 14px;
   background: transparent;
   color: #9ca3af;
@@ -277,6 +282,7 @@
 }
 
 .queue-empty-title {
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
@@ -284,12 +290,14 @@
 }
 
 .queue-empty-sub {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   color: #6b7280;
   margin-bottom: 20px;
 }
 
 .queue-empty-btn {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 500;
   padding: 9px 20px;
@@ -298,9 +306,12 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .queue-loading {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   color: #9ca3af;
   padding: 40px 0;
@@ -308,6 +319,7 @@
 }
 
 .queue-error {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   color: #ef4444;
   background: #fef2f2;
@@ -325,6 +337,7 @@
 }
 
 .queue-load-more-btn {
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   padding: 9px 24px;
   background: #fff;
