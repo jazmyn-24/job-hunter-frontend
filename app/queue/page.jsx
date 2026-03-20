@@ -18,26 +18,54 @@ function scoreClass(score) {
   return "score-gray";
 }
 
-const FILTER_OPTIONS = [
-  { label: "All scored",  value: 0  },
-  { label: "Score 70+",   value: 70 },
-  { label: "Score 80+",   value: 80 },
-  { label: "Score 85+",   value: 85 },
-];
-
-const PAGE_SIZE = 20;
-
-/* Derive a human-readable term chip from title + job_type */
+/* Derive a readable type chip from the job title */
 function termChip(job) {
   const t = (job.title || "").toLowerCase();
   if (t.includes("co-op") || t.includes("coop") || t.includes("co op")) return "Co-op";
   if (t.includes("intern")) return "Internship";
   if (t.includes("student")) return "Student";
-  // Fall back to job_type but normalize "Full-time" on co-op roles
-  const jt = (job.job_type || "").toLowerCase();
-  if (jt.includes("co") || jt.includes("intern")) return job.job_type;
   return "Co-op / Intern";
 }
+
+const SCORE_OPTIONS = [
+  { label: "Score 70+",  value: 70 },
+  { label: "Score 85+",  value: 85 },
+  { label: "Score 95+",  value: 95 },
+  { label: "All scored", value: 0  },
+];
+
+const TERM_OPTIONS = [
+  { label: "Fall 2026+",      value: "fall2026"  },
+  { label: "August 2026",     value: "aug2026"   },
+  { label: "September 2026",  value: "sep2026"   },
+  { label: "Winter 2027",     value: "winter2027" },
+  { label: "Summer 2027",     value: "summer2027" },
+  { label: "All upcoming",    value: "all"       },
+];
+
+const DOMAIN_OPTIONS = [
+  { label: "All domains",          value: "all"       },
+  { label: "ML & AI",              value: "ml"        },
+  { label: "Data Engineering",     value: "data_eng"  },
+  { label: "Cloud & DevOps",       value: "cloud"     },
+  { label: "Software Development", value: "swe"       },
+  { label: "Data Analytics",       value: "analytics" },
+  { label: "Business & Finance",   value: "biz"       },
+  { label: "Other",                value: "other"     },
+];
+
+const SKILL_OPTIONS = [
+  { label: "Any skills",           value: "any"       },
+  { label: "Python",               value: "python"    },
+  { label: "SQL",                  value: "sql"       },
+  { label: "AWS",                  value: "aws"       },
+  { label: "Machine Learning",     value: "ml"        },
+  { label: "React / Frontend",     value: "react"     },
+  { label: "Kubernetes / Docker",  value: "k8s"       },
+  { label: "Data Analytics",       value: "analytics" },
+];
+
+const PAGE_SIZE = 20;
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -116,17 +144,21 @@ export default function QueuePage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
-  const [jobs,      setJobs]      = useState([]);
-  const [total,     setTotal]     = useState(0);
-  const [loading,   setLoading]   = useState(true);
+  const [jobs,        setJobs]        = useState([]);
+  const [total,       setTotal]       = useState(0);
+  const [loading,     setLoading]     = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error,     setError]     = useState("");
-  const [minScore,  setMinScore]  = useState(70);
-  const [skipped,   setSkipped]   = useState(new Set());
+  const [error,       setError]       = useState("");
+  const [skipped,     setSkipped]     = useState(new Set());
 
-  const load = useCallback(async (score, offset = 0, append = false) => {
+  const [minScore, setMinScore] = useState(70);
+  const [term,     setTerm]     = useState("fall2026");
+  const [domain,   setDomain]   = useState("all");
+  const [skill,    setSkill]    = useState("any");
+
+  const load = useCallback(async (filters, offset = 0, append = false) => {
     try {
-      const data = await getScoreQueue(score, PAGE_SIZE, offset);
+      const data = await getScoreQueue({ ...filters, limit: PAGE_SIZE, offset });
       setTotal(data.total ?? 0);
       setJobs(prev => append ? [...prev, ...(data.jobs ?? [])] : (data.jobs ?? []));
     } catch (_) {
@@ -136,34 +168,61 @@ export default function QueuePage() {
     setLoadingMore(false);
   }, []);
 
+  const currentFilters = { minScore, term, domain, skill };
+
   useEffect(() => {
     if (!isOnboarded()) { router.replace("/auth"); return; }
     setReady(true);
-    load(minScore);
+    load(currentFilters);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleFilterChange(e) {
-    const score = Number(e.target.value);
-    setMinScore(score);
+  function applyFilters(next) {
     setLoading(true);
     setSkipped(new Set());
     setError("");
-    load(score);
+    load(next);
   }
 
+  function handleScore(e) {
+    const v = Number(e.target.value);
+    setMinScore(v);
+    applyFilters({ ...currentFilters, minScore: v });
+  }
+  function handleTerm(e) {
+    const v = e.target.value;
+    setTerm(v);
+    applyFilters({ ...currentFilters, term: v });
+  }
+  function handleDomain(e) {
+    const v = e.target.value;
+    setDomain(v);
+    applyFilters({ ...currentFilters, domain: v });
+  }
+  function handleSkillFilter(e) {
+    const v = e.target.value;
+    setSkill(v);
+    applyFilters({ ...currentFilters, skill: v });
+  }
   function handleSkip(id) {
     setSkipped(prev => new Set([...prev, id]));
   }
-
   function handleLoadMore() {
     setLoadingMore(true);
-    load(minScore, jobs.length, true);
+    load(currentFilters, jobs.length, true);
   }
 
   if (!ready) return null;
 
   const visibleJobs = jobs.filter(j => !skipped.has(j.id));
   const hasMore = jobs.length < total;
+
+  // Active filter banner text
+  const nonDefault = [
+    term   !== "fall2026" && TERM_OPTIONS.find(o => o.value === term)?.label,
+    domain !== "all"      && DOMAIN_OPTIONS.find(o => o.value === domain)?.label,
+    skill  !== "any"      && SKILL_OPTIONS.find(o => o.value === skill)?.label,
+  ].filter(Boolean);
+  const showBanner = nonDefault.length > 0;
 
   return (
     <div className="queue-shell">
@@ -178,18 +237,24 @@ export default function QueuePage() {
           </p>
         </div>
 
-        {/* Controls */}
-        <div className="queue-controls">
-          <span className="queue-filter-label">Filter:</span>
-          <select
-            className="queue-filter-select"
-            value={minScore}
-            onChange={handleFilterChange}
-          >
-            {FILTER_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
+        {/* Filter row */}
+        <div className="queue-filter-row">
+          <select className="queue-filter-dropdown" value={minScore} onChange={handleScore}>
+            {SCORE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
+
+          <select className="queue-filter-dropdown" value={term} onChange={handleTerm}>
+            {TERM_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+
+          <select className="queue-filter-dropdown" value={domain} onChange={handleDomain}>
+            {DOMAIN_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+
+          <select className="queue-filter-dropdown" value={skill} onChange={handleSkillFilter}>
+            {SKILL_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+
           {!loading && (
             <span className="queue-count">
               {total} job{total !== 1 ? "s" : ""}
@@ -197,6 +262,17 @@ export default function QueuePage() {
             </span>
           )}
         </div>
+
+        {/* Active filter banner */}
+        {showBanner && !loading && (
+          <div className="queue-active-banner">
+            Showing: {[
+              TERM_OPTIONS.find(o => o.value === term)?.label,
+              domain !== "all" && DOMAIN_OPTIONS.find(o => o.value === domain)?.label,
+              skill  !== "any" && SKILL_OPTIONS.find(o => o.value === skill)?.label,
+            ].filter(Boolean).join(" · ")} · {total} result{total !== 1 ? "s" : ""}
+          </div>
+        )}
 
         {error && <p className="queue-error">{error}</p>}
 
@@ -207,13 +283,11 @@ export default function QueuePage() {
           <div className="queue-empty">
             <div className="queue-empty-icon">⭐</div>
             <div className="queue-empty-title">
-              {total === 0
-                ? "No scored jobs yet"
-                : "All jobs skipped"}
+              {total === 0 ? "No jobs match these filters" : "All jobs skipped"}
             </div>
             <p className="queue-empty-sub">
               {total === 0
-                ? "Run the scorer from the dashboard to match jobs to your profile"
+                ? "Try broadening the filters above"
                 : "Change the filter or refresh to see more"}
             </p>
             {total === 0 && (
