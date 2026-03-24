@@ -75,10 +75,7 @@ function FormattedDescription({ text }) {
           (trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed) && trimmed.length > 3 && trimmed.length < 80) ||
           (trimmed.endsWith(":") && trimmed.length < 60 && !/^[•\-\*\d]/.test(trimmed));
         const isBullet = /^[•\-\*]\s/.test(trimmed) || /^\d+[\.\)]\s/.test(trimmed);
-
-        if (isHeader) {
-          return <h4 key={i} className="ind-desc-header">{trimmed}</h4>;
-        }
+        if (isHeader) return <h4 key={i} className="ind-desc-header">{trimmed}</h4>;
         if (isBullet) {
           const content = trimmed.replace(/^[•\-\*]\s*|^\d+[\.\)]\s*/, "");
           return (
@@ -97,9 +94,7 @@ function FormattedDescription({ text }) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ SHIMMER ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 function Shimmer({ width, height, style = {} }) {
-  return (
-    <div className="ind-shimmer" style={{ width, height, borderRadius: 4, ...style }} />
-  );
+  return <div className="ind-shimmer" style={{ width, height, borderRadius: 4, ...style }} />;
 }
 
 function ShimmerCard() {
@@ -122,17 +117,12 @@ function JobCard({ job, selected, onClick }) {
   const jobType = extractJobType(job);
 
   return (
-    <div
-      className={"ind-card" + (selected ? " selected" : "")}
-      onClick={onClick}
-    >
+    <div className={"ind-card" + (selected ? " selected" : "")} onClick={onClick}>
       <div className="ind-card-title">{job.title}</div>
       <div className="ind-card-company">
         {[job.company, job.location].filter(Boolean).join(" · ")}
       </div>
-      {job.salary && (
-        <div className="ind-card-salary">{job.salary}</div>
-      )}
+      {job.salary && <div className="ind-card-salary">{job.salary}</div>}
       <div className="ind-card-tags">
         <span className="ind-term-chip">{term}</span>
         <span className="ind-type-tag green">{jobType}</span>
@@ -181,43 +171,22 @@ function JobDetail({ job, onBack }) {
     const longDesc = job.description && job.description.length > 500;
     setDesc(job.description || "");
     setDescFailed(false);
-
-    if (longDesc) {
-      setDescCached(true);
-      setDescLoading(false);
-      return;
-    }
-
+    if (longDesc) { setDescCached(true); setDescLoading(false); return; }
     setDescCached(false);
     setDescLoading(true);
     getJobDescription(job.id)
-      .then(data => {
-        setDesc(data.description || job.description || "");
-        setDescCached(!!data.cached);
-        setDescLoading(false);
-      })
-      .catch(() => {
-        setDescFailed(true);
-        setDescLoading(false);
-      });
+      .then(data => { setDesc(data.description || job.description || ""); setDescCached(!!data.cached); setDescLoading(false); })
+      .catch(() => { setDescFailed(true); setDescLoading(false); });
   }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="ind-detail">
-      {onBack && (
-        <button className="ind-back-btn" onClick={onBack}>← Back to results</button>
-      )}
-
+      {onBack && <button className="ind-back-btn" onClick={onBack}>← Back to results</button>}
       <h1 className="ind-detail-title">{job.title}</h1>
       {(job.company || job.location) && (
-        <p className="ind-detail-company">
-          {[job.company, job.location].filter(Boolean).join(" · ")}
-        </p>
+        <p className="ind-detail-company">{[job.company, job.location].filter(Boolean).join(" · ")}</p>
       )}
-      {job.salary && (
-        <p className="ind-detail-salary">{job.salary}</p>
-      )}
-
+      {job.salary && <p className="ind-detail-salary">{job.salary}</p>}
       <div className="ind-detail-meta">
         <span className="ind-term-chip">{term}</span>
         <span className="ind-meta-sep">·</span>
@@ -229,26 +198,17 @@ function JobDetail({ job, onBack }) {
           <><span className="ind-meta-sep">·</span><span className="ind-not-scored">Not scored yet</span></>
         )}
       </div>
-
       <div className="ind-actions">
         <button className="ind-btn-apply">Apply now</button>
-        <a
-          href={job.url || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ind-btn-view"
-        >
+        <a href={job.url || "#"} target="_blank" rel="noopener noreferrer" className="ind-btn-view">
           View original posting →
         </a>
       </div>
-
       <hr className="ind-divider" />
-
       <p className="ind-section-label">
         About the job
         {descCached && <span className="ind-cached-badge">· cached</span>}
       </p>
-
       {descLoading ? (
         <div>
           <p className="ind-fetching-label">Fetching full description…</p>
@@ -260,18 +220,14 @@ function JobDetail({ job, onBack }) {
         <>
           <FormattedDescription text={desc} />
           {descFailed && job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">
-              View on original site →
-            </a>
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">View on original site →</a>
           )}
         </>
       ) : (
         <>
           <p className="ind-no-desc">No description available for this posting.</p>
           {job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">
-              View on original site →
-            </a>
+            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">View on original site →</a>
           )}
         </>
       )}
@@ -279,52 +235,18 @@ function JobDetail({ job, onBack }) {
   );
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ FILTER PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ FILTER STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const DEFAULT_FILTERS = {
   sort: "newest",
   datePosted: "any",
-  terms: ["fall2026"],
-  types: ["coop", "intern"],
+  term: "fall2026",   // single value
+  jobType: "all",     // "all" | "coop" | "intern" | "student"
   locations: [],
   domains: [],
   companies: [],
+  minScore: 0,
 };
-
-const TERM_OPTIONS = [
-  { val: "fall2026",     label: "Fall 2026+" },
-  { val: "summer2026",   label: "Summer 2026" },
-  { val: "winter2027",   label: "Winter 2027" },
-  { val: "summer2027",   label: "Summer 2027" },
-  { val: "any_upcoming", label: "Any upcoming" },
-];
-
-const TYPE_OPTIONS = [
-  { val: "coop",    label: "Co-op" },
-  { val: "intern",  label: "Internship" },
-  { val: "student", label: "Student positions" },
-];
-
-const DOMAIN_OPTIONS = [
-  "ML & AI",
-  "Data Engineering",
-  "Software Development",
-  "Cloud & DevOps",
-  "Data Analytics",
-  "Business & Finance",
-  "Other",
-];
-
-const STATIC_LOCATIONS = [
-  "Vancouver, BC",
-  "Toronto, Ontario",
-  "Remote",
-  "Calgary, Alberta",
-  "Ottawa, Ontario",
-  "Montreal, Quebec",
-  "Edmonton, Alberta",
-  "Canada (any)",
-];
 
 const DOMAIN_KWS = {
   "ML & AI":              ["machine learning", " ml ", "artificial intelligence", "deep learning", "nlp", "computer vision", "llm", "generative"],
@@ -338,69 +260,36 @@ const DOMAIN_KWS = {
 function matchesDomain(job, domains) {
   if (!domains.length) return true;
   const text = ((job.title || "") + " " + (job.description || "")).toLowerCase();
-  return domains.some(domain => {
-    if (domain === "Other") return true;
-    return (DOMAIN_KWS[domain] || []).some(kw => text.includes(kw));
-  });
+  return domains.some(domain => (DOMAIN_KWS[domain] || []).some(kw => text.includes(kw)));
 }
 
 function filtersToParams(f) {
-  let term = "all";
-  if (f.terms.includes("any_upcoming")) {
-    term = "all_upcoming";
-  } else if (f.terms.length === 0) {
-    term = "all";
-  } else if (f.terms.length === 1) {
-    const map = { fall2026: "fall2026", summer2026: "summer2026", winter2027: "2027", summer2027: "2027" };
-    term = map[f.terms[0]] || "all_upcoming";
-  } else {
-    const has2026 = f.terms.some(t => ["fall2026", "summer2026"].includes(t));
-    const has2027 = f.terms.some(t => ["winter2027", "summer2027"].includes(t));
-    if (has2026 || has2027) term = "all_upcoming";
-  }
-
-  let jobType = "all_types";
-  const ts = [...f.types].sort();
-  if (ts.length === 0) {
-    jobType = "all_types";
-  } else if (JSON.stringify(ts) === '["coop","intern"]') {
-    jobType = "all";
-  } else if (ts.length === 1) {
-    jobType = ts[0];
-  } else {
-    jobType = "all_types";
-  }
-
+  const termMap = { fall2026: "fall2026", summer2026: "summer2026", winter2027: "2027", summer2027: "2027", any_upcoming: "all_upcoming" };
   return {
     sort: f.sort,
-    term,
-    jobType,
+    term: termMap[f.term] || "fall2026",
+    jobType: f.jobType,
     datePosted: f.datePosted,
     companies: f.companies,
     locations: f.locations,
   };
 }
 
-function countActiveFilters(f) {
-  let count = 0;
-  if (f.sort !== "newest") count++;
-  if (f.datePosted !== "any") count++;
-  if (JSON.stringify([...f.terms].sort()) !== '["fall2026"]') count++;
-  if (JSON.stringify([...f.types].sort()) !== '["coop","intern"]') count++;
-  count += f.locations.length + f.domains.length + f.companies.length;
-  return count;
+function countPanelFilters(f) {
+  return (f.sort !== "newest" ? 1 : 0) + f.companies.length + (f.minScore > 0 ? 1 : 0);
 }
 
 function cloneFilters(f) {
-  return {
-    ...f,
-    terms: [...f.terms],
-    types: [...f.types],
-    locations: [...f.locations],
-    domains: [...f.domains],
-    companies: [...f.companies],
-  };
+  return { ...f, locations: [...f.locations], domains: [...f.domains], companies: [...f.companies] };
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ ICONS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+const ChevronDown = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
 
 const CheckIcon = () => (
   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
@@ -408,24 +297,171 @@ const CheckIcon = () => (
   </svg>
 );
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ QUICK FILTER CHIPS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+const CHIP_LOCATIONS = ["Vancouver, BC", "Toronto, Ontario", "Remote", "Calgary, Alberta", "Ottawa, Ontario", "Montreal, Quebec", "Any location"];
+const CHIP_DOMAINS   = ["ML & AI", "Data Engineering", "Software Development", "Cloud & DevOps", "Data Analytics", "Business & Finance"];
+
+function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
+  const [openDd, setOpenDd] = useState(null);
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    function onMouseDown(e) {
+      if (rowRef.current && !rowRef.current.contains(e.target)) setOpenDd(null);
+    }
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, []);
+
+  function toggle(dd) { setOpenDd(prev => prev === dd ? null : dd); }
+
+  function setVal(key, val) {
+    onChange({ ...filters, [key]: val });
+    setOpenDd(null);
+  }
+
+  function toggleArr(key, val) {
+    const arr = filters[key];
+    onChange({ ...filters, [key]: arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val] });
+  }
+
+  const DATE_LABELS = { "24h": "Past 24h", week: "Past week", month: "Past month" };
+  const TERM_LABELS = { fall2026: "Fall 2026+", summer2026: "Summer 2026", winter2027: "Winter 2027", summer2027: "Summer 2027", any_upcoming: "Any upcoming" };
+  const TYPE_LABELS = { all: "Co-op & Internship", coop: "Co-op only", intern: "Internship only", student: "Student positions" };
+
+  const dateActive = filters.datePosted !== "any";
+  const termActive = filters.term !== "fall2026";
+  const typeActive = filters.jobType !== "all";
+  const locActive  = filters.locations.length > 0;
+  const domActive  = filters.domains.length > 0;
+
+  const dateLabel = dateActive ? DATE_LABELS[filters.datePosted] : "Date posted";
+  const termLabel = termActive ? `Term: ${TERM_LABELS[filters.term] || filters.term}` : "Term";
+  const typeLabel = typeActive ? `Job type: ${TYPE_LABELS[filters.jobType] || filters.jobType}` : "Job type";
+  const locLabel  = locActive
+    ? (filters.locations.length === 1 ? `${filters.locations[0].split(",")[0]}` : `Location (${filters.locations.length})`)
+    : "Location";
+  const domLabel  = domActive
+    ? (filters.domains.length === 1 ? filters.domains[0] : `Domain (${filters.domains.length})`)
+    : "Domain";
+
+  return (
+    <div className="qf-row" ref={rowRef}>
+
+      {/* Date posted */}
+      <div className="qf-wrap">
+        <button className={`qf-chip${dateActive ? " active" : ""}`} onClick={() => toggle("date")}>
+          {dateLabel} <ChevronDown />
+        </button>
+        {openDd === "date" && (
+          <div className="qf-dropdown">
+            {[["any","Any time"],["24h","Past 24 hours"],["week","Past week"],["month","Past month"]].map(([val, label]) => (
+              <div key={val} className={`qf-option${filters.datePosted === val ? " selected" : ""}`} onClick={() => setVal("datePosted", val)}>
+                {label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Term */}
+      <div className="qf-wrap">
+        <button className={`qf-chip${termActive ? " active" : ""}`} onClick={() => toggle("term")}>
+          {termLabel} <ChevronDown />
+        </button>
+        {openDd === "term" && (
+          <div className="qf-dropdown">
+            {[["fall2026","Fall 2026+"],["summer2026","Summer 2026"],["winter2027","Winter 2027"],["summer2027","Summer 2027"],["any_upcoming","Any upcoming"]].map(([val, label]) => (
+              <div key={val} className={`qf-option${filters.term === val ? " selected" : ""}`} onClick={() => setVal("term", val)}>
+                {label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Job type */}
+      <div className="qf-wrap">
+        <button className={`qf-chip${typeActive ? " active" : ""}`} onClick={() => toggle("type")}>
+          {typeLabel} <ChevronDown />
+        </button>
+        {openDd === "type" && (
+          <div className="qf-dropdown">
+            {[["all","Co-op & Internship"],["coop","Co-op only"],["intern","Internship only"],["student","Student positions"]].map(([val, label]) => (
+              <div key={val} className={`qf-option${filters.jobType === val ? " selected" : ""}`} onClick={() => setVal("jobType", val)}>
+                {label}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Location */}
+      <div className="qf-wrap">
+        <button className={`qf-chip${locActive ? " active" : ""}`} onClick={() => toggle("loc")}>
+          {locLabel} <ChevronDown />
+        </button>
+        {openDd === "loc" && (
+          <div className="qf-dropdown">
+            {CHIP_LOCATIONS.map(loc => (
+              <div key={loc} className={`qf-option qf-option-check${filters.locations.includes(loc) ? " selected" : ""}`} onClick={() => toggleArr("locations", loc)}>
+                <div className={`fp-checkbox${filters.locations.includes(loc) ? " checked" : ""}`}>
+                  {filters.locations.includes(loc) && <CheckIcon />}
+                </div>
+                {loc}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Domain */}
+      <div className="qf-wrap">
+        <button className={`qf-chip${domActive ? " active" : ""}`} onClick={() => toggle("dom")}>
+          {domLabel} <ChevronDown />
+        </button>
+        {openDd === "dom" && (
+          <div className="qf-dropdown">
+            {CHIP_DOMAINS.map(dom => (
+              <div key={dom} className={`qf-option qf-option-check${filters.domains.includes(dom) ? " selected" : ""}`} onClick={() => toggleArr("domains", dom)}>
+                <div className={`fp-checkbox${filters.domains.includes(dom) ? " checked" : ""}`}>
+                  {filters.domains.includes(dom) && <CheckIcon />}
+                </div>
+                {dom}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* All filters */}
+      <button className={`qf-chip qf-all-filters-chip${panelHasActive ? " has-active" : ""}`} onClick={onAllFilters} style={{ marginLeft: "auto" }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="20" y2="12" /><line x1="12" y1="18" x2="20" y2="18" />
+        </svg>
+        All filters
+        {panelHasActive && <span className="fp-active-dot" />}
+      </button>
+
+    </div>
+  );
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ FILTER PANEL ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jobs }) {
   const [companySearch, setCompanySearch] = useState("");
-  const [showMoreLocations, setShowMoreLocations] = useState(false);
 
   const topCompanies = useMemo(() => {
     const counts = {};
     jobs.forEach(j => { if (j.company) counts[j.company] = (counts[j.company] || 0) + 1; });
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([name]) => name);
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([name]) => name);
   }, [jobs]);
 
   const filteredCompanies = companySearch
     ? topCompanies.filter(c => c.toLowerCase().includes(companySearch.toLowerCase()))
     : topCompanies;
-
-  const visibleLocations = showMoreLocations ? STATIC_LOCATIONS : STATIC_LOCATIONS.slice(0, 6);
 
   function toggle(field, val) {
     const arr = draft[field];
@@ -442,13 +478,11 @@ function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jo
       <div className="fp-overlay" onClick={onClose} />
       <div className="fp-panel">
 
-        {/* Header */}
         <div className="fp-header">
-          <span className="fp-header-title">Filters</span>
-          <button className="fp-close-btn" onClick={onClose} aria-label="Close filters">×</button>
+          <span className="fp-header-title">More filters</span>
+          <button className="fp-close-btn" onClick={onClose} aria-label="Close">×</button>
         </div>
 
-        {/* Body */}
         <div className="fp-body">
 
           {/* Sort by */}
@@ -456,7 +490,7 @@ function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jo
             <div className="fp-section-title">Sort by</div>
             <div className="fp-radio-row">
               {[["newest", "Most recent"], ["score", "Highest score"]].map(([val, label]) => (
-                <div key={val} className="fp-radio-item" onClick={() => setDraft({ ...draft, sort: val })}>
+                <div key={val} className={`fp-radio-item${draft.sort === val ? " selected" : ""}`} onClick={() => setDraft({ ...draft, sort: val })}>
                   <div className={`fp-radio-circle${draft.sort === val ? " checked" : ""}`}>
                     {draft.sort === val && <div className="fp-radio-dot" />}
                   </div>
@@ -466,79 +500,21 @@ function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jo
             </div>
           </div>
 
-          {/* Date posted */}
+          {/* Min match score */}
           <div className="fp-section">
-            <div className="fp-section-title">Date posted</div>
-            <div className="fp-radio-grid">
-              {[["any", "Any time"], ["24h", "Past 24 hours"], ["week", "Past week"], ["month", "Past month"]].map(([val, label]) => (
-                <div key={val} className="fp-radio-item" onClick={() => setDraft({ ...draft, datePosted: val })}>
-                  <div className={`fp-radio-circle${draft.datePosted === val ? " checked" : ""}`}>
-                    {draft.datePosted === val && <div className="fp-radio-dot" />}
-                  </div>
-                  <span className="fp-option-label">{label}</span>
-                </div>
-              ))}
+            <div className="fp-section-title">
+              Min. match score: <span style={{ color: "#2557a7" }}>{draft.minScore > 0 ? `${draft.minScore}+` : "Any"}</span>
             </div>
-          </div>
-
-          {/* Term */}
-          <div className="fp-section">
-            <div className="fp-section-title">Term</div>
-            {TERM_OPTIONS.map(({ val, label }) => (
-              <div key={val} className="fp-checkbox-item" onClick={() => toggle("terms", val)}>
-                <div className={`fp-checkbox${draft.terms.includes(val) ? " checked" : ""}`}>
-                  {draft.terms.includes(val) && <CheckIcon />}
-                </div>
-                <span className="fp-option-label">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Job type */}
-          <div className="fp-section">
-            <div className="fp-section-title">Job type</div>
-            {TYPE_OPTIONS.map(({ val, label }) => (
-              <div key={val} className="fp-checkbox-item" onClick={() => toggle("types", val)}>
-                <div className={`fp-checkbox${draft.types.includes(val) ? " checked" : ""}`}>
-                  {draft.types.includes(val) && <CheckIcon />}
-                </div>
-                <span className="fp-option-label">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Location */}
-          <div className="fp-section">
-            <div className="fp-section-title">Location</div>
-            {visibleLocations.map(loc => (
-              <div key={loc} className="fp-checkbox-item" onClick={() => toggle("locations", loc)}>
-                <div className={`fp-checkbox${draft.locations.includes(loc) ? " checked" : ""}`}>
-                  {draft.locations.includes(loc) && <CheckIcon />}
-                </div>
-                <span className="fp-option-label">{loc}</span>
-              </div>
-            ))}
-            {!showMoreLocations && (
-              <button
-                className="fp-show-more"
-                onClick={e => { e.stopPropagation(); setShowMoreLocations(true); }}
-              >
-                Show {STATIC_LOCATIONS.length - 6} more
-              </button>
-            )}
-          </div>
-
-          {/* Domain */}
-          <div className="fp-section">
-            <div className="fp-section-title">Domain</div>
-            {DOMAIN_OPTIONS.map(domain => (
-              <div key={domain} className="fp-checkbox-item" onClick={() => toggle("domains", domain)}>
-                <div className={`fp-checkbox${draft.domains.includes(domain) ? " checked" : ""}`}>
-                  {draft.domains.includes(domain) && <CheckIcon />}
-                </div>
-                <span className="fp-option-label">{domain}</span>
-              </div>
-            ))}
+            <input
+              type="range"
+              min={0} max={100} step={5}
+              value={draft.minScore}
+              onChange={e => setDraft({ ...draft, minScore: Number(e.target.value) })}
+              className="fp-score-slider"
+            />
+            <div className="fp-slider-labels">
+              <span>Any</span><span>50</span><span>100</span>
+            </div>
           </div>
 
           {/* Company */}
@@ -551,9 +527,7 @@ function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jo
               value={companySearch}
               onChange={e => setCompanySearch(e.target.value)}
             />
-            {filteredCompanies.length === 0 && (
-              <p className="fp-no-companies">No companies in current results</p>
-            )}
+            {filteredCompanies.length === 0 && <p className="fp-no-companies">No companies in current results</p>}
             {filteredCompanies.map(company => (
               <div key={company} className="fp-checkbox-item" onClick={() => toggle("companies", company)}>
                 <div className={`fp-checkbox${draft.companies.includes(company) ? " checked" : ""}`}>
@@ -566,7 +540,6 @@ function FilterPanel({ draft, setDraft, onApply, onClose, onReset, liveCount, jo
 
         </div>
 
-        {/* Footer */}
         <div className="fp-footer">
           <button className="fp-btn-reset" onClick={onReset}>Reset</button>
           <button className="fp-btn-show" onClick={onApply}>
@@ -587,17 +560,17 @@ export default function JobsPage() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
-  const [jobs,        setJobs]        = useState([]);
-  const [total,       setTotal]       = useState(0);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [filters,     setFilters]     = useState(cloneFilters(DEFAULT_FILTERS));
-  const [panelOpen,   setPanelOpen]   = useState(false);
+  const [jobs,         setJobs]         = useState([]);
+  const [total,        setTotal]        = useState(0);
+  const [selectedJob,  setSelectedJob]  = useState(null);
+  const [filters,      setFilters]      = useState(cloneFilters(DEFAULT_FILTERS));
+  const [panelOpen,    setPanelOpen]    = useState(false);
   const [draftFilters, setDraftFilters] = useState(null);
-  const [liveCount,   setLiveCount]   = useState(0);
-  const [loading,     setLoading]     = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [offset,      setOffset]      = useState(0);
-  const [mobileView,  setMobileView]  = useState("list");
+  const [liveCount,    setLiveCount]    = useState(0);
+  const [loading,      setLoading]      = useState(true);
+  const [loadingMore,  setLoadingMore]  = useState(false);
+  const [offset,       setOffset]       = useState(0);
+  const [mobileView,   setMobileView]   = useState("list");
 
   const listRef        = useRef(null);
   const detailRef      = useRef(null);
@@ -608,7 +581,7 @@ export default function JobsPage() {
     setReady(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Main data fetch
+  // Main data fetch — triggered by filters change
   useEffect(() => {
     if (!ready) return;
     setLoading(true);
@@ -623,7 +596,7 @@ export default function JobsPage() {
     }).catch(() => setLoading(false));
   }, [ready, filters]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Live count while panel is open
+  // Live count while panel is open (only panel draft changes)
   useEffect(() => {
     if (!panelOpen || !draftFilters) return;
     if (liveCountTimer.current) clearTimeout(liveCountTimer.current);
@@ -639,8 +612,7 @@ export default function JobsPage() {
     const el = listRef.current;
     if (!el) return;
     function onScroll() {
-      if (loadingMore) return;
-      if (jobs.length >= total) return;
+      if (loadingMore || jobs.length >= total) return;
       const { scrollTop, scrollHeight, clientHeight } = el;
       if (scrollTop + clientHeight >= scrollHeight - 80) {
         const nextOffset = offset + PAGE_SIZE;
@@ -674,13 +646,14 @@ export default function JobsPage() {
 
   function removePill(key, val) {
     const next = cloneFilters(filters);
-    if (key === "sort")       next.sort      = "newest";
+    if (key === "sort")       next.sort = "newest";
     else if (key === "datePosted") next.datePosted = "any";
-    else if (key === "term")  next.terms     = next.terms.filter(t => t !== val);
-    else if (key === "type")  next.types     = next.types.filter(t => t !== val);
+    else if (key === "term")  next.term = "fall2026";
+    else if (key === "jobType") next.jobType = "all";
     else if (key === "location") next.locations = next.locations.filter(l => l !== val);
     else if (key === "domain")   next.domains   = next.domains.filter(d => d !== val);
     else if (key === "company")  next.companies = next.companies.filter(c => c !== val);
+    else if (key === "minScore") next.minScore = 0;
     setFilters(next);
   }
 
@@ -694,34 +667,38 @@ export default function JobsPage() {
     if (detailRef.current) detailRef.current.scrollTop = 0;
   }
 
-  const activeFilterCount = countActiveFilters(filters);
+  const panelActiveCount = countPanelFilters(filters);
 
   const pills = useMemo(() => {
     const result = [];
-    const SORT_LABELS  = { score: "Highest score", company_asc: "Company A–Z", company_desc: "Company Z–A" };
-    const DATE_LABELS  = { "24h": "Past 24 hours", week: "Past week", month: "Past month" };
-    const TERM_LABELS  = { fall2026: "Fall 2026+", summer2026: "Summer 2026", winter2027: "Winter 2027", summer2027: "Summer 2027", any_upcoming: "Any upcoming" };
-    const TYPE_LABELS  = { coop: "Co-op", intern: "Internship", student: "Student positions" };
+    const DATE_LABELS = { "24h": "Past 24h", week: "Past week", month: "Past month" };
+    const TERM_LABELS = { summer2026: "Summer 2026", winter2027: "Winter 2027", summer2027: "Summer 2027", any_upcoming: "Any upcoming" };
+    const TYPE_LABELS = { coop: "Co-op only", intern: "Internship only", student: "Student positions" };
 
-    if (filters.sort !== "newest")
-      result.push({ key: "sort", val: filters.sort, label: SORT_LABELS[filters.sort] || filters.sort });
     if (filters.datePosted !== "any")
-      result.push({ key: "datePosted", val: filters.datePosted, label: DATE_LABELS[filters.datePosted] });
-    if (JSON.stringify([...filters.terms].sort()) !== '["fall2026"]')
-      filters.terms.forEach(t => result.push({ key: "term", val: t, label: TERM_LABELS[t] || t }));
-    if (JSON.stringify([...filters.types].sort()) !== '["coop","intern"]')
-      filters.types.forEach(t => result.push({ key: "type", val: t, label: TYPE_LABELS[t] || t }));
+      result.push({ key: "datePosted", val: filters.datePosted, label: DATE_LABELS[filters.datePosted] || filters.datePosted });
+    if (filters.term !== "fall2026")
+      result.push({ key: "term", val: filters.term, label: TERM_LABELS[filters.term] || filters.term });
+    if (filters.jobType !== "all")
+      result.push({ key: "jobType", val: filters.jobType, label: TYPE_LABELS[filters.jobType] || filters.jobType });
     filters.locations.forEach(l => result.push({ key: "location", val: l, label: l }));
     filters.domains.forEach(d => result.push({ key: "domain", val: d, label: d }));
     filters.companies.forEach(c => result.push({ key: "company", val: c, label: c }));
+    if (filters.sort !== "newest")
+      result.push({ key: "sort", val: filters.sort, label: filters.sort === "score" ? "Highest score" : filters.sort });
+    if (filters.minScore > 0)
+      result.push({ key: "minScore", val: filters.minScore, label: `Score ≥ ${filters.minScore}` });
     return result;
   }, [filters]);
 
-  // Domain filter is client-side (no DB field)
-  const displayedJobs = useMemo(
-    () => filters.domains.length ? jobs.filter(j => matchesDomain(j, filters.domains)) : jobs,
-    [jobs, filters.domains]
-  );
+  // Client-side post-filters (domain keywords + min score)
+  const displayedJobs = useMemo(() => {
+    let result = filters.domains.length ? jobs.filter(j => matchesDomain(j, filters.domains)) : jobs;
+    if (filters.minScore > 0) result = result.filter(j => hasScore(j.score) && j.score >= filters.minScore);
+    return result;
+  }, [jobs, filters.domains, filters.minScore]);
+
+  const displayCount = (filters.domains.length || filters.minScore > 0) ? displayedJobs.length : total;
 
   if (!ready) return null;
 
@@ -742,46 +719,41 @@ export default function JobsPage() {
       )}
 
       <div className="ind-main">
-        {/* ── Left panel ── */}
         <div className={"ind-left" + (mobileView === "detail" ? " ind-hidden-mobile" : "")}>
+
+          {/* Title row */}
           <div className="ind-topbar">
             <div className="ind-topbar-row">
               <span className="ind-topbar-title">Jobs</span>
-              <span className="ind-count-badge">
-                {total.toLocaleString()} matching
-              </span>
+              <span className="ind-count-badge">{total.toLocaleString()} matching</span>
             </div>
+          </div>
 
-            {/* Results count + All filters button */}
-            <div className="fp-results-row">
-              <span className="fp-results-count">
-                {loading ? "Loading…" : `${total.toLocaleString()} results`}
+          {/* Row 1 — Quick filter chips */}
+          <QuickFilterChips
+            filters={filters}
+            onChange={setFilters}
+            onAllFilters={openPanel}
+            panelHasActive={panelActiveCount > 0}
+          />
+
+          {/* Row 2 — Results count + active pills */}
+          <div className="qf-results-row">
+            <span className="qf-results-count">
+              {loading ? "Loading…" : `${displayCount.toLocaleString()} results`}
+            </span>
+            {pills.map((pill, i) => (
+              <span key={i} className="fp-pill">
+                {pill.label}
+                <button className="fp-pill-x" onClick={() => removePill(pill.key, pill.val)}>×</button>
               </span>
-              <button className="fp-all-filters-btn" onClick={openPanel}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="4" y1="6" x2="20" y2="6" />
-                  <line x1="4" y1="12" x2="14" y2="12" />
-                  <line x1="4" y1="18" x2="10" y2="18" />
-                </svg>
-                All filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-                {activeFilterCount > 0 && <span className="fp-active-dot" />}
-              </button>
-            </div>
-
-            {/* Active filter pills */}
+            ))}
             {pills.length > 0 && (
-              <div className="fp-pills-row">
-                {pills.map((pill, i) => (
-                  <span key={i} className="fp-pill">
-                    {pill.label}
-                    <button className="fp-pill-x" onClick={() => removePill(pill.key, pill.val)}>×</button>
-                  </span>
-                ))}
-                <button className="fp-clear-all" onClick={clearAll}>Clear all</button>
-              </div>
+              <button className="fp-clear-all" onClick={clearAll}>Clear all</button>
             )}
           </div>
 
+          {/* Job list */}
           <div className="ind-list" ref={listRef}>
             {loading
               ? Array.from({ length: 12 }, (_, i) => <ShimmerCard key={i} />)
@@ -794,22 +766,14 @@ export default function JobsPage() {
                   />
                 ))
             }
-            {loadingMore && (
-              <div className="ind-load-more">Loading more…</div>
-            )}
+            {loadingMore && <div className="ind-load-more">Loading more…</div>}
           </div>
         </div>
 
-        {/* ── Right panel ── */}
-        <div
-          className={"ind-right" + (mobileView === "list" ? " ind-hidden-mobile" : "")}
-          ref={detailRef}
-        >
+        {/* Right panel */}
+        <div className={"ind-right" + (mobileView === "list" ? " ind-hidden-mobile" : "")} ref={detailRef}>
           {selectedJob
-            ? <JobDetail
-                job={selectedJob}
-                onBack={mobileView === "detail" ? () => setMobileView("list") : null}
-              />
+            ? <JobDetail job={selectedJob} onBack={mobileView === "detail" ? () => setMobileView("list") : null} />
             : <EmptyState />
           }
         </div>

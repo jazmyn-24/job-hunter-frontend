@@ -33,7 +33,7 @@
 /* ── Topbar ── */
 
 .ind-topbar {
-  padding: 16px 16px 12px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid #e4e2e0;
   flex-shrink: 0;
   background: #ffffff;
@@ -43,7 +43,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
 }
 
 .ind-topbar-title {
@@ -64,65 +63,6 @@
   padding: 2px 8px;
 }
 
-/* ── Filter row (dropdowns) ── */
-
-.ind-filter-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  padding: 12px 0 2px;
-  flex-wrap: wrap;
-}
-
-.ind-filter-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.ind-filter-label {
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #595959;
-  margin-bottom: 4px;
-}
-
-.ind-filter-select {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: #2d2d2d;
-  background: #ffffff;
-  border: 1px solid #e4e2e0;
-  border-radius: 4px;
-  padding: 7px 30px 7px 10px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  min-width: 150px;
-  outline: none;
-  transition: border-color 0.1s;
-}
-
-.ind-filter-select:focus,
-.ind-filter-select:hover {
-  border-color: #2557a7;
-}
-
-/* ── Period banner ── */
-
-.ind-period-banner {
-  padding: 8px 16px;
-  background: #f3f2ef;
-  border-bottom: 1px solid #e4e2e0;
-  border-left: 3px solid #2557a7;
-  font-family: "Inter", sans-serif;
-  font-size: 12px;
-  color: #595959;
-  flex-shrink: 0;
-  padding-left: 13px;
-}
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ JOB LIST ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
@@ -567,43 +507,127 @@
   }
 }
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RESULTS ROW + ALL FILTERS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ QUICK FILTER CHIPS — ROW 1 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.fp-results-row {
+.qf-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 0 4px;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e4e2e0;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  background: #ffffff;
 }
 
-.fp-results-count {
-  font-family: "Inter", sans-serif;
-  font-size: 13px;
-  color: #595959;
+/* Chip wrapper — anchors the dropdown */
+.qf-wrap {
+  position: relative;
 }
 
-.fp-all-filters-btn {
-  display: flex;
+/* Base chip */
+.qf-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: none;
+  gap: 5px;
+  background: #ffffff;
   border: 1px solid #e4e2e0;
   border-radius: 20px;
-  padding: 5px 14px;
+  padding: 6px 12px;
   font-family: "Inter", sans-serif;
   font-size: 13px;
   color: #2d2d2d;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  position: relative;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.fp-all-filters-btn:hover {
+.qf-chip:hover {
   border-color: #2557a7;
-  background: #f0f4ff;
+  color: #2557a7;
 }
 
+/* Active / selected chip */
+.qf-chip.active {
+  background: #eef2ff;
+  border-color: #2557a7;
+  color: #2557a7;
+  font-weight: 500;
+}
+
+/* "All filters" chip variant */
+.qf-all-filters-chip {
+  flex-shrink: 0;
+}
+
+.qf-all-filters-chip.has-active {
+  background: #eef2ff;
+  border-color: #2557a7;
+  color: #2557a7;
+}
+
+/* Dropdown */
+.qf-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #e4e2e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 6px;
+  z-index: 50;
+  min-width: 200px;
+}
+
+.qf-option {
+  padding: 9px 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #2d2d2d;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.qf-option:hover {
+  background: #f8f9fb;
+}
+
+.qf-option.selected {
+  color: #2557a7;
+  font-weight: 500;
+}
+
+/* Checkbox-style option in dropdown */
+.qf-option-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RESULTS ROW — ROW 2 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+.qf-results-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #f0efed;
+}
+
+.qf-results-count {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  color: #595959;
+  flex-shrink: 0;
+}
+
+/* fp-active-dot is still used in All filters chip */
 .fp-active-dot {
   width: 7px;
   height: 7px;
@@ -614,13 +638,7 @@
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ ACTIVE FILTER PILLS ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-.fp-pills-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 0 2px;
-  flex-shrink: 0;
-}
+/* (pills live in qf-results-row now — no separate row) */
 
 .fp-pill {
   display: inline-flex;
@@ -889,6 +907,24 @@
 }
 
 .fp-show-more:hover { color: #1a3d7a; }
+
+/* ── Score slider ── */
+
+.fp-score-slider {
+  width: 100%;
+  height: 4px;
+  accent-color: #2557a7;
+  cursor: pointer;
+  margin: 10px 0 6px;
+}
+
+.fp-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Inter", sans-serif;
+  font-size: 11px;
+  color: #767676;
+}
 
 /* ── Company search ── */
 
