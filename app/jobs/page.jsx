@@ -327,7 +327,7 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
   }
 
   const DATE_LABELS = { "24h": "Past 24h", week: "Past week", month: "Past month" };
-  const TERM_LABELS = { fall2026: "Fall 2026+", summer2026: "Summer 2026", winter2027: "Winter 2027", summer2027: "Summer 2027", any_upcoming: "Any upcoming" };
+  const TERM_LABELS = { fall2026: "Fall 2026", summer2026: "Summer 2026", winter2027: "Winter 2027", summer2027: "Summer 2027", any_upcoming: "Any upcoming" };
   const TYPE_LABELS = { all: "Co-op & Internship", coop: "Co-op only", intern: "Internship only", student: "Student positions" };
 
   const dateActive = filters.datePosted !== "any";
@@ -372,7 +372,7 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
         </button>
         {openDd === "term" && (
           <div className="qf-dropdown">
-            {[["fall2026","Fall 2026+"],["summer2026","Summer 2026"],["winter2027","Winter 2027"],["summer2027","Summer 2027"],["any_upcoming","Any upcoming"]].map(([val, label]) => (
+            {[["fall2026","Fall 2026"],["summer2026","Summer 2026"],["winter2027","Winter 2027"],["summer2027","Summer 2027"],["any_upcoming","Any upcoming"]].map(([val, label]) => (
               <div key={val} className={`qf-option${filters.term === val ? " selected" : ""}`} onClick={() => setVal("term", val)}>
                 {label}
               </div>
