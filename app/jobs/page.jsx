@@ -161,29 +161,37 @@ function JobDetail({ job, onBack }) {
   const term     = extractTerm(job);
   const jobType  = extractJobType(job);
 
-  const BLOCK_PHRASES = ["unsupported browser", "download internet explorer", "please enable javascript", "javascript is required", "access denied", "403 forbidden", "you are a robot", "captcha", "cloudflare", "checking your browser"];
+  const BLOCK_PHRASES = ["unsupported browser", "download internet explorer", "please enable javascript", "javascript is required", "access denied", "403 forbidden", "you are a robot", "captcha", "cloudflare", "checking your browser", "summary placeholder", "placeholder."];
   const isBlocked = (text) => { const t = (text || "").toLowerCase(); return BLOCK_PHRASES.some(p => t.includes(p)); };
 
-  const hasLongDesc = job.description && job.description.length > 500 && !isBlocked(job.description);
-  const [desc,        setDesc]        = useState(hasLongDesc ? job.description : "");
-  const [descLoading, setDescLoading] = useState(!hasLongDesc);
-  const [descCached,  setDescCached]  = useState(hasLongDesc);
+  // Skip API call if we already have a usable description (> 200 chars, not garbage)
+  const hasGoodDesc = job.description && job.description.length > 200 && !isBlocked(job.description);
+  const [desc,        setDesc]        = useState(hasGoodDesc ? job.description : "");
+  const [descLoading, setDescLoading] = useState(!hasGoodDesc);
+  const [descCached,  setDescCached]  = useState(hasGoodDesc);
   const [descFailed,  setDescFailed]  = useState(false);
 
   useEffect(() => {
-    const longDesc = job.description && job.description.length > 500 && !isBlocked(job.description);
-    setDesc(longDesc ? job.description : "");
+    const goodDesc = job.description && job.description.length > 200 && !isBlocked(job.description);
+    setDesc(goodDesc ? job.description : "");
     setDescFailed(false);
-    if (longDesc) { setDescCached(true); setDescLoading(false); return; }
+    if (goodDesc) { setDescCached(true); setDescLoading(false); return; }
     setDescCached(false);
     setDescLoading(true);
     getJobDescription(job.id)
       .then(data => {
-        if (data.error === "Site blocked automated access") {
-          setDescFailed(true);
-          setDesc("");
+        const fetched = data.description || "";
+        const isUsable = fetched.trim().length >= 50 && !isBlocked(fetched);
+        if (data.error === "Site blocked automated access" || !isUsable) {
+          // Fall back to whatever is in DB if it's at least 50 chars
+          const fallback = (job.description || "").trim();
+          if (fallback.length >= 50 && !isBlocked(fallback)) {
+            setDesc(fallback);
+          } else {
+            setDescFailed(true);
+          }
         } else {
-          setDesc(data.description || job.description || "");
+          setDesc(fetched);
           setDescCached(!!data.cached);
         }
         setDescLoading(false);
@@ -228,18 +236,13 @@ function JobDetail({ job, onBack }) {
           <Shimmer width="75%" height={13} style={{ marginBottom: 8 }} />
           <Shimmer width="55%" height={13} />
         </div>
-      ) : descFailed ? (
-        <>
-          <p className="ind-no-desc" style={{ fontStyle: "italic" }}>Full description not available for this posting.</p>
-          {job.url && (
-            <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">View on original site →</a>
-          )}
-        </>
-      ) : desc ? (
+      ) : desc && desc.trim().length >= 50 ? (
         <FormattedDescription text={desc} />
       ) : (
         <>
-          <p className="ind-no-desc">No description available for this posting.</p>
+          <p className="ind-no-desc" style={descFailed ? { fontStyle: "italic" } : {}}>
+            {descFailed ? "Full description not available for this posting." : "No description available for this posting."}
+          </p>
           {job.url && (
             <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">View on original site →</a>
           )}
