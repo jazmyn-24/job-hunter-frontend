@@ -607,6 +607,21 @@
   gap: 10px;
 }
 
+/* Radio-style option with ✓ on right */
+.qf-option-radio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.qf-check {
+  color: #2557a7;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ RESULTS ROW — ROW 2 ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 .qf-results-row {

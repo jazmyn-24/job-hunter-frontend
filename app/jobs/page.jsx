@@ -278,10 +278,11 @@ function matchesDomain(job, domains) {
 }
 
 function filtersToParams(f) {
-  const termMap = { fall2026: "fall2026", summer2026: "summer2026", winter2027: "2027", summer2027: "2027", any_upcoming: "all_upcoming" };
+  // "any_upcoming" maps to "all_upcoming" backend alias; all others pass through directly
+  const termMap = { any_upcoming: "all_upcoming" };
   return {
     sort: f.sort,
-    term: termMap[f.term] || "fall2026",
+    term: termMap[f.term] || f.term,
     jobType: f.jobType,
     datePosted: f.datePosted,
     companies: f.companies,
@@ -345,19 +346,19 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
   const TYPE_LABELS = { all: "Co-op & Internship", coop: "Co-op only", intern: "Internship only", student: "Student positions" };
 
   const dateActive = filters.datePosted !== "any";
-  const termActive = filters.term !== "fall2026";
+  const termActive = true; // always show current term selection
   const typeActive = filters.jobType !== "all";
   const locActive  = filters.locations.length > 0;
   const domActive  = filters.domains.length > 0;
 
-  const dateLabel = dateActive ? DATE_LABELS[filters.datePosted] : "Date posted";
-  const termLabel = termActive ? `Term: ${TERM_LABELS[filters.term] || filters.term}` : "Term";
-  const typeLabel = typeActive ? `Job type: ${TYPE_LABELS[filters.jobType] || filters.jobType}` : "Job type";
+  const dateLabel = dateActive ? `Date: ${DATE_LABELS[filters.datePosted]}` : "Date posted";
+  const termLabel = `Term: ${TERM_LABELS[filters.term] || filters.term}`;
+  const typeLabel = typeActive ? `Type: ${TYPE_LABELS[filters.jobType] || filters.jobType}` : "Job type";
   const locLabel  = locActive
-    ? (filters.locations.length === 1 ? `${filters.locations[0].split(",")[0]}` : `Location (${filters.locations.length})`)
+    ? (filters.locations.length === 1 ? `Location: ${filters.locations[0].split(",")[0]}` : `Location: ${filters.locations.length} selected`)
     : "Location";
   const domLabel  = domActive
-    ? (filters.domains.length === 1 ? filters.domains[0] : `Domain (${filters.domains.length})`)
+    ? (filters.domains.length === 1 ? `Domain: ${filters.domains[0]}` : `Domain: ${filters.domains.length} selected`)
     : "Domain";
 
   return (
@@ -371,8 +372,9 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
         {openDd === "date" && (
           <div className="qf-dropdown">
             {[["any","Any time"],["24h","Past 24 hours"],["week","Past week"],["month","Past month"]].map(([val, label]) => (
-              <div key={val} className={`qf-option${filters.datePosted === val ? " selected" : ""}`} onClick={() => setVal("datePosted", val)}>
-                {label}
+              <div key={val} className={`qf-option qf-option-radio${filters.datePosted === val ? " selected" : ""}`} onClick={() => setVal("datePosted", val)}>
+                <span>{label}</span>
+                {filters.datePosted === val && <span className="qf-check">✓</span>}
               </div>
             ))}
           </div>
@@ -387,8 +389,9 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
         {openDd === "term" && (
           <div className="qf-dropdown">
             {[["fall2026","Fall 2026"],["summer2026","Summer 2026"],["winter2027","Winter 2027"],["summer2027","Summer 2027"],["any_upcoming","Any upcoming"]].map(([val, label]) => (
-              <div key={val} className={`qf-option${filters.term === val ? " selected" : ""}`} onClick={() => setVal("term", val)}>
-                {label}
+              <div key={val} className={`qf-option qf-option-radio${filters.term === val ? " selected" : ""}`} onClick={() => setVal("term", val)}>
+                <span>{label}</span>
+                {filters.term === val && <span className="qf-check">✓</span>}
               </div>
             ))}
           </div>
@@ -403,8 +406,9 @@ function QuickFilterChips({ filters, onChange, onAllFilters, panelHasActive }) {
         {openDd === "type" && (
           <div className="qf-dropdown">
             {[["all","Co-op & Internship"],["coop","Co-op only"],["intern","Internship only"],["student","Student positions"]].map(([val, label]) => (
-              <div key={val} className={`qf-option${filters.jobType === val ? " selected" : ""}`} onClick={() => setVal("jobType", val)}>
-                {label}
+              <div key={val} className={`qf-option qf-option-radio${filters.jobType === val ? " selected" : ""}`} onClick={() => setVal("jobType", val)}>
+                <span>{label}</span>
+                {filters.jobType === val && <span className="qf-check">✓</span>}
               </div>
             ))}
           </div>
