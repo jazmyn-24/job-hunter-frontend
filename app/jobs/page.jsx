@@ -161,21 +161,33 @@ function JobDetail({ job, onBack }) {
   const term     = extractTerm(job);
   const jobType  = extractJobType(job);
 
-  const hasLongDesc = job.description && job.description.length > 500;
-  const [desc,        setDesc]        = useState(job.description || "");
+  const BLOCK_PHRASES = ["unsupported browser", "download internet explorer", "please enable javascript", "javascript is required", "access denied", "403 forbidden", "you are a robot", "captcha", "cloudflare", "checking your browser"];
+  const isBlocked = (text) => { const t = (text || "").toLowerCase(); return BLOCK_PHRASES.some(p => t.includes(p)); };
+
+  const hasLongDesc = job.description && job.description.length > 500 && !isBlocked(job.description);
+  const [desc,        setDesc]        = useState(hasLongDesc ? job.description : "");
   const [descLoading, setDescLoading] = useState(!hasLongDesc);
   const [descCached,  setDescCached]  = useState(hasLongDesc);
   const [descFailed,  setDescFailed]  = useState(false);
 
   useEffect(() => {
-    const longDesc = job.description && job.description.length > 500;
-    setDesc(job.description || "");
+    const longDesc = job.description && job.description.length > 500 && !isBlocked(job.description);
+    setDesc(longDesc ? job.description : "");
     setDescFailed(false);
     if (longDesc) { setDescCached(true); setDescLoading(false); return; }
     setDescCached(false);
     setDescLoading(true);
     getJobDescription(job.id)
-      .then(data => { setDesc(data.description || job.description || ""); setDescCached(!!data.cached); setDescLoading(false); })
+      .then(data => {
+        if (data.error === "Site blocked automated access") {
+          setDescFailed(true);
+          setDesc("");
+        } else {
+          setDesc(data.description || job.description || "");
+          setDescCached(!!data.cached);
+        }
+        setDescLoading(false);
+      })
       .catch(() => { setDescFailed(true); setDescLoading(false); });
   }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -216,13 +228,15 @@ function JobDetail({ job, onBack }) {
           <Shimmer width="75%" height={13} style={{ marginBottom: 8 }} />
           <Shimmer width="55%" height={13} />
         </div>
-      ) : desc ? (
+      ) : descFailed ? (
         <>
-          <FormattedDescription text={desc} />
-          {descFailed && job.url && (
+          <p className="ind-no-desc" style={{ fontStyle: "italic" }}>Full description not available for this posting.</p>
+          {job.url && (
             <a href={job.url} target="_blank" rel="noopener noreferrer" className="ind-fallback-link">View on original site →</a>
           )}
         </>
+      ) : desc ? (
+        <FormattedDescription text={desc} />
       ) : (
         <>
           <p className="ind-no-desc">No description available for this posting.</p>
