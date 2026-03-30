@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Sidebar from "../../components/Sidebar";
-import { getSession } from "../../lib/session";
+import { getOrCreateSessionId } from "../../lib/session";
 import {
   getJobs,
   tailorCV,
@@ -33,70 +33,79 @@ function AnalysisTab({ result }) {
 
   return (
     <div>
-      {/* Hiring Manager Mindset */}
-      {hm.mindset && (
+      {/* Key priorities */}
+      {hm.key_priorities?.length > 0 && (
         <div className="tl-card">
-          <div className="tl-card-title">Hiring Manager Mindset</div>
-          <p className="tl-card-text">{hm.mindset}</p>
-        </div>
-      )}
-
-      {/* Top Priorities */}
-      {hm.top_priorities?.length > 0 && (
-        <div className="tl-card">
-          <div className="tl-card-title">Top Priorities</div>
+          <div className="tl-card-title">Key Priorities</div>
           <ul className="tl-list">
-            {hm.top_priorities.map((p, i) => <li key={i}>{p}</li>)}
+            {hm.key_priorities.map((p, i) => <li key={i}>{p}</li>)}
           </ul>
         </div>
       )}
 
-      {/* Matched / Missing skills */}
-      <div className="tl-card">
-        <div className="tl-card-title">Skills Match</div>
-        {rm.matched_skills?.length > 0 && (
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#767676", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Matched</div>
-            <div className="tl-tag-list">
-              {rm.matched_skills.map((s, i) => <span key={i} className="tl-tag green">{s}</span>)}
-            </div>
-          </div>
-        )}
-        {rm.missing_skills?.length > 0 && (
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#767676", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Gaps</div>
-            <div className="tl-tag-list">
-              {rm.missing_skills.map((s, i) => <span key={i} className="tl-tag red">{s}</span>)}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Transferable strengths */}
-      {rm.transferable_strengths?.length > 0 && (
+      {/* Hidden expectations */}
+      {hm.hidden_expectations?.length > 0 && (
         <div className="tl-card">
-          <div className="tl-card-title">Transferable Strengths</div>
+          <div className="tl-card-title">Hidden Expectations</div>
+          <ul className="tl-list">
+            {hm.hidden_expectations.map((e, i) => <li key={i}>{e}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {/* Success profile */}
+      {hm.success_profile && (
+        <div className="tl-card">
+          <div className="tl-card-title">What Success Looks Like</div>
+          <p className="tl-card-text">{hm.success_profile}</p>
+        </div>
+      )}
+
+      {/* Yes pile factors */}
+      {hm.yes_pile_factors?.length > 0 && (
+        <div className="tl-card">
+          <div className="tl-card-title">What Gets You in the Yes Pile</div>
           <div className="tl-tag-list">
-            {rm.transferable_strengths.map((s, i) => <span key={i} className="tl-tag">{s}</span>)}
+            {hm.yes_pile_factors.map((f, i) => <span key={i} className="tl-tag green">{f}</span>)}
           </div>
         </div>
       )}
 
-      {/* Red flags */}
-      {hm.red_flags?.length > 0 && (
+      {/* Worries */}
+      {hm.worries?.length > 0 && (
         <div className="tl-card">
-          <div className="tl-card-title">Watch Out</div>
+          <div className="tl-card-title">Hiring Manager Worries</div>
           <ul className="tl-list">
-            {hm.red_flags.map((f, i) => <li key={i}>{f}</li>)}
+            {hm.worries.map((w, i) => <li key={i}>{w}</li>)}
           </ul>
         </div>
       )}
 
-      {/* Strategy */}
-      {rm.positioning_strategy && (
+      {/* Highlight first / must-have keywords */}
+      {rm.highlight_first?.length > 0 && (
         <div className="tl-card">
-          <div className="tl-card-title">Positioning Strategy</div>
-          <p className="tl-card-text">{rm.positioning_strategy}</p>
+          <div className="tl-card-title">Lead With These</div>
+          <div className="tl-tag-list">
+            {rm.highlight_first.map((s, i) => <span key={i} className="tl-tag">{s}</span>)}
+          </div>
+        </div>
+      )}
+
+      {rm.must_have_keywords?.length > 0 && (
+        <div className="tl-card">
+          <div className="tl-card-title">Must-Have Keywords</div>
+          <div className="tl-tag-list">
+            {rm.must_have_keywords.map((k, i) => <span key={i} className="tl-tag red">{k}</span>)}
+          </div>
+        </div>
+      )}
+
+      {rm.downplay?.length > 0 && (
+        <div className="tl-card">
+          <div className="tl-card-title">Downplay These</div>
+          <div className="tl-tag-list">
+            {rm.downplay.map((d, i) => <span key={i} className="tl-tag gray">{d}</span>)}
+          </div>
         </div>
       )}
     </div>
@@ -219,8 +228,7 @@ function CVPreviewTab({ cv }) {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN PAGE ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 export default function TailorPage() {
-  const session = getSession();
-  const sessionId = session?.sessionId || session?.id || "";
+  const sessionId = getOrCreateSessionId() || "";
 
   // Jobs list + search
   const [jobs, setJobs] = useState([]);
@@ -284,7 +292,11 @@ export default function TailorPage() {
 
   /* Run tailor */
   async function handleTailor() {
-    if (!selectedJob || !sessionId) return;
+    if (!sessionId) {
+      setError("Profile not synced. Please go to the Dashboard and click Sync Profile first.");
+      return;
+    }
+    if (!selectedJob) return;
     setLoading(true);
     setError(null);
     setResult(null);
