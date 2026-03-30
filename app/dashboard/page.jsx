@@ -97,9 +97,21 @@ function Shimmer({ width = 80, height = 40 }) {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━ STAT CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highlight, loading }) {
+function StatCard({ label, icon, value, delta, deltaPositive, accentColor, highlight, loading, onClick }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <div className={"db-stat-card" + (highlight ? " highlight" : "")}>
+    <div
+      className={"db-stat-card" + (highlight ? " highlight" : "")}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        cursor: "pointer",
+        transition: "box-shadow .15s ease, transform .15s ease",
+        boxShadow: hovered ? "0 4px 12px rgba(0,0,0,.08)" : undefined,
+        transform: hovered ? "translateY(-1px)" : undefined,
+      }}
+    >
       <div className="db-stat-top">
         <span className="db-stat-label">{label}</span>
         <span className="db-stat-icon" style={{ color: accentColor }}>{icon}</span>
@@ -350,6 +362,7 @@ export default function DashboardPage() {
             deltaPositive={!error && (stats?.jobs_added_last_run ?? 0) > 0}
             accentColor="#4361ee"
             loading={loading}
+            onClick={() => router.push("/jobs")}
           />
           <StatCard
             label="SCORE QUEUE"
@@ -360,6 +373,7 @@ export default function DashboardPage() {
             accentColor="#7c3aed"
             highlight
             loading={loading}
+            onClick={() => router.push("/queue")}
           />
           <StatCard
             label="APPLICATIONS SENT"
@@ -369,6 +383,7 @@ export default function DashboardPage() {
             deltaPositive={false}
             accentColor="#0891b2"
             loading={loading}
+            onClick={() => router.push("/applications")}
           />
           <StatCard
             label="INTERVIEWS"
@@ -378,6 +393,7 @@ export default function DashboardPage() {
             deltaPositive={!error && (stats?.interviews ?? 0) > 0}
             accentColor="#059669"
             loading={loading}
+            onClick={() => router.push("/applications")}
           />
         </div>
 
